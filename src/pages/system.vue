@@ -121,6 +121,55 @@
         </el-col>
       </el-row>
     </div>
+    <div class="statistics-layout2">
+      <div class="layout-title">小时客流统计</div>
+      <el-row>
+        <el-col :span="4">
+          <div style="padding: 20px">
+            <div>
+              <div style="color: #909399;font-size: 14px">当前小时顾客总数</div>
+              <div style="color: #606266;font-size: 24px;padding: 10px 0">10000</div>
+              <div>
+                <span class="color-success" style="font-size: 14px">+10%</span>
+                <span style="color: #C0C4CC;font-size: 14px">同比上小时</span>
+              </div>
+            </div>
+          </div>
+        </el-col>
+        <el-col :span="20">
+          <div style="padding: 10px;border-left:1px solid #DCDFE6">
+            <el-time-select
+              placeholder="起始时间"
+              v-model="startTime"
+              :picker-options="{
+                 start: '00:00',
+                 step: '01:00',
+                  end: '24:00'
+              }">
+            </el-time-select>
+            <el-time-select
+              placeholder="结束时间"
+              v-model="endTime"
+              :picker-options="{
+              start: '00:00',
+              step: '01:00',
+              end: '24:00',
+              minTime: startTime
+              }">
+            </el-time-select>
+            <div>
+              <ve-line
+                :data="chartData1"
+                :legend-visible="false"
+                :loading="loading1"
+                :data-empty="dataEmpty1"
+                :settings="chartSettings1">
+              </ve-line>
+            </div>
+          </div>
+        </el-col>
+      </el-row>
+    </div>
   </div>
 </template>
 <script>
@@ -149,6 +198,8 @@ export default {
   name: 'system',
   data () {
     return {
+      startTime: '',
+      endTime: '',
       pickerOptions: {shortcuts: [{
         text: '最近一周',
         onClick (picker) {
