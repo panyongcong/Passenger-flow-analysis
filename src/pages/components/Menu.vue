@@ -53,7 +53,7 @@ export default {
   }
   .el-menu-vertical-demo {
     width: 100%;
-    height: 1000px;
+    height: 100%;
   }
   .el-menu-vertical-demo:not(.el-menu--collapse) {
     width: 200px;

@@ -121,7 +121,7 @@
         </el-col>
       </el-row>
     </div>
-    <div class="statistics-layout2">
+    <div class="statistics-layout">
       <div class="layout-title">小时客流统计</div>
       <el-row>
         <el-col :span="4">
@@ -138,31 +138,9 @@
         </el-col>
         <el-col :span="20">
           <div style="padding: 10px;border-left:1px solid #DCDFE6">
-            <el-time-select
-              placeholder="起始时间"
-              v-model="startTime"
-              :picker-options="{
-                 start: '00:00',
-                 step: '01:00',
-                  end: '24:00'
-              }">
-            </el-time-select>
-            <el-time-select
-              placeholder="结束时间"
-              v-model="endTime"
-              :picker-options="{
-              start: '00:00',
-              step: '01:00',
-              end: '24:00',
-              minTime: startTime
-              }">
-            </el-time-select>
             <div>
               <ve-line
                 :data="chartData1"
-                :legend-visible="false"
-                :loading="loading1"
-                :data-empty="dataEmpty1"
                 :settings="chartSettings1">
               </ve-line>
             </div>
@@ -198,8 +176,6 @@ export default {
   name: 'system',
   data () {
     return {
-      startTime: '',
-      endTime: '',
       pickerOptions: {shortcuts: [{
         text: '最近一周',
         onClick (picker) {
@@ -229,7 +205,16 @@ export default {
         area: true,
         axisSite: {right: ['DayCount']},
         labelMap: {'DayCount': '一天顾客数'}},
+      chartSettings1: {
+        xAxisType: 'time',
+        area: true,
+        axisSite: {right: ['DayCount']},
+        labelMap: {'DayCount': '小时顾客数'}},
       chartData: {
+        columns: [],
+        rows: []
+      },
+      chartData1: {
         columns: [],
         rows: []
       },

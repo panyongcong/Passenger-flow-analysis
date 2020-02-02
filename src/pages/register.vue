@@ -18,6 +18,15 @@
         <el-form-item label="确认密码" prop="checkPass">
           <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off" style="width: 100%"></el-input>
         </el-form-item>
+        <el-form-item label="角色">
+          <el-select v-model="ruleForm.region" placeholder="请选择角色" style="width: 100%" @change="changeselect">
+            <el-option label="店员" value="Clerk"></el-option>
+            <el-option label="店长" value="Shopowner"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="店主用户名" style="width: 100%" v-if="ok">
+          <el-input v-model="ruleForm.Shopowner_name"></el-input>
+        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="submitForm('ruleForm')" style="width: 70%">注册</el-button>
           <el-button @click="resetForm('ruleForm')" style="width: 24%">重置</el-button>
@@ -60,13 +69,16 @@ export default {
       ruleForm: {
         password: '',
         checkPass: '',
-        username: ''
+        username: '',
+        region: '',
+        Shopowner_name: ''
       },
       rls: {
         password: [{ validator: vapass, trigger: 'blur' }],
         checkPass: [{ validator: varepass, trigger: 'blur' }],
         username: [{ validator: checkUser, trigger: 'blur' }]
-      }
+      },
+      ok: false
     }
   },
   methods: {
@@ -90,6 +102,13 @@ export default {
     },
     resetForm (formName) {
       this.$refs[formName].resetFields()
+    },
+    changeselect (value) {
+      if (value === 'Clerk') {
+        this.ok = true
+      } else {
+        this.ok = false
+      }
     }
   }
 }
@@ -104,9 +123,7 @@ export default {
     background-size:100% 100%;
   }
   .register-con{
-    border: 1px solid #ccc;
-    background-color: white;
-    margin-top: 200px;
+    margin-top: 100px;
     width: 30%;
     height: 40%;
     margin-left: 33%;
