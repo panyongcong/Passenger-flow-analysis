@@ -1,7 +1,8 @@
 <template>
-  <div class="home-main">
+  <div class="home-main" style="height: 100%;position:absolute;
+    width: 100%">
     <el-container class="index-container">
-      <el-container>
+      <el-container style="height: 100%">
         <el-aside width="200px">
           <Menu></Menu>
         </el-aside>

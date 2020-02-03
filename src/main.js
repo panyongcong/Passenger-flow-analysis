@@ -15,6 +15,15 @@ import 'element-ui/lib/theme-chalk/index.css'
 import fastClick from 'fastclick'
 import './assets/styles/reset.css'
 import './assets/styles/border.css'
+import echarts from 'echarts'
+import vueJsonp from 'vue-jsonp'
+import BaiduMap from 'vue-baidu-map'
+Vue.use(BaiduMap, {
+  /* 申请的百度密钥，可以在百度地图官网申请 */
+  ak: 'OSCnM1z1OLFZMMrqjevm77yy8fbYMxbT'
+})
+Vue.use(vueJsonp)
+Vue.prototype.$echarts = echarts
 Vue.use(Vuex)
 Vue.use(ElementUI)
 Vue.use(Antd)

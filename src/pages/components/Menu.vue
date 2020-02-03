@@ -3,7 +3,7 @@
     <el-row class="tac">
       <el-col :span="20" style="width: 100%;height: 100%">
         <el-menu
-          default-active="$route.path"
+          default-active="/system"
           router
           :collapse="isCollapse"
           class="el-menu-vertical-demo"
