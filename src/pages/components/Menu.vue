@@ -5,7 +5,6 @@
         <el-menu
           default-active="/system"
           router
-          :collapse="isCollapse"
           class="el-menu-vertical-demo"
           background-color="#304156"
           text-color="#bfcbd9"
