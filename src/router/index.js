@@ -32,7 +32,11 @@ const router = new Router({
         {
           path: '/system',
           name: 'system',
-          component: () => import('@/pages/system')
+          component: () => import('@/pages/system'),
+          meta: {
+            title: '首页', // 菜单名称
+            roles: ['staff', 'admin', 'boss'] // 当前菜单哪些角色可以看到
+          }
         },
         {
           path: '/profile',

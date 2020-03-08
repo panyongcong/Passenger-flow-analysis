@@ -19,13 +19,21 @@
           <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="角色">
-          <el-select v-model="ruleForm.region" placeholder="请选择角色" style="width: 100%" @change="changeselect">
-            <el-option label="店员" value="Clerk"></el-option>
-            <el-option label="店长" value="Shopowner"></el-option>
+          <el-select v-model="ruleForm.uid" placeholder="请选择角色" style="width: 100%" @change="changeselect">
+            <el-option label="店员" value="3"></el-option>
+            <el-option label="店长" value="2"></el-option>
           </el-select>
         </el-form-item>
         <el-form-item label="店主用户名" style="width: 100%" v-if="ok">
-          <el-input v-model="ruleForm.Shopowner_name"></el-input>
+          <el-input id="shoppowner_name" v-model="ruleForm.Shopowner_name" @change="getaddress()"></el-input>
+        </el-form-item>
+        <el-form-item label="店铺位置" style="width: 100%" v-if="ok">
+          <el-select v-model="ruleForm.address" placeholder="请选择位置" style="width: 100%">
+            <el-option v-for="(item, index) in shopaddress"
+                       :key="index"
+                       :value="item.label"
+                       :label="item.label"></el-option>
+          </el-select>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="submitForm('ruleForm')" style="width: 70%">注册</el-button>
@@ -70,45 +78,107 @@ export default {
         password: '',
         checkPass: '',
         username: '',
-        region: '',
-        Shopowner_name: ''
+        uid: '',
+        Shopowner_name: '',
+        address: ''
       },
       rls: {
         password: [{ validator: vapass, trigger: 'blur' }],
         checkPass: [{ validator: varepass, trigger: 'blur' }],
         username: [{ validator: checkUser, trigger: 'blur' }]
       },
-      ok: false
+      ok: false,
+      shopaddress: []
     }
   },
   methods: {
     submitForm (formName) {
       let _this = this
+      console.log(_this.ruleForm)
+      let registerForm = {}
+      if (_this.ruleForm.uid === '2') {
+        registerForm.uid = _this.ruleForm.uid
+        registerForm.username = _this.ruleForm.username
+        registerForm.password = _this.ruleForm.password
+        registerForm.address = ''
+      }
+      if (_this.ruleForm.uid === '3') {
+        registerForm.uid = _this.ruleForm.uid
+        registerForm.username = _this.ruleForm.username
+        registerForm.password = _this.ruleForm.password
+        registerForm.address = _this.ruleForm.address
+      }
+      registerForm = this.$qs.stringify(registerForm)
       this.$axios({
         method: 'post',
-        url: '/register',
-        data: _this.ruleForm
-      }).then(function (res) {
-        if (res.code === '500') {
-          alert('用户名已被占用')
-        } else {
-          alert('注册成功')
-          _this.$router.push('/')
+        url: 'http://47.112.255.207:8081/register',
+        data: registerForm,
+        Headers: {
+          'Authorization': ' '
+        },
+        crossDomain: true
+      }).then(res => {
+        if (res.data.code === 401) {
+          alert('注册店员身份要查询店主的店铺,并且选择店铺进行绑定')
         }
-      }).catch(function (err) {
-        console.log(err)
-        alert('注册失败')
+        if (res.data.code === 402) {
+          alert('你所注册的用户名已经存在')
+        }
+        if (res.data.code === 403) {
+          alert('注册失败，请与管理员联系')
+        }
+        if (res.data.code === 200) {
+          alert('注册成功')
+        }
+      }).catch(error => {
+        console.log('登录失败')
+        alert('登录失败')
+        console.log(error)
       })
     },
     resetForm (formName) {
       this.$refs[formName].resetFields()
     },
     changeselect (value) {
-      if (value === 'Clerk') {
+      if (value === '3') {
         this.ok = true
       } else {
         this.ok = false
       }
+    },
+    getaddress () {
+      this.$axios.get('http://47.112.255.207:8081/findShopByBossName', {
+        Headers: {
+          'Authorization': ' '
+        },
+        params: {
+          username: this.ruleForm.Shopowner_name
+        },
+        crossDomain: true
+      }).then(res => {
+        console.log(res.data)
+        if (res.data.code === 401) {
+          alert('该店主还没有添加任何店铺,或者该店主还没有注册请核对店主信息')
+        }
+        if (res.data.code === 402) {
+          alert('查询店铺失败')
+        }
+        if (res.data.code === 200) {
+          console.log(res.data.data.address.length)
+          console.log(res.data.data.address)
+          for (let i = 0; i < res.data.data.address.length; i++) {
+            let add = {}
+            add.value = i
+            add.label = res.data.data.address[i]
+            console.log(add)
+            this.shopaddress.push(add)
+          }
+          console.log(this.shopaddress)
+        }
+      }).catch(error => {
+        console.log('失败')
+        console.log(error)
+      })
     }
   }
 }

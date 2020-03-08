@@ -69,6 +69,20 @@ export default {
       this.$alert('点击地图即可添加店面', '提示', {
         confirmButtonText: '确定'
       })
+      this.$axios({
+        method: 'get',
+        url: 'http://47.112.255.207:8081/test',
+        Headers: {
+          'Authorization': ' '
+        },
+        crossDomain: true
+      }).then(res => {
+        console.log(res.data)
+        alert('成功')
+      }).catch(error => {
+        console.log('失败')
+        console.log(error)
+      })
     }
   }
 }

@@ -18,6 +18,7 @@ import './assets/styles/border.css'
 import echarts from 'echarts'
 import vueJsonp from 'vue-jsonp'
 import BaiduMap from 'vue-baidu-map'
+import qs from 'qs'
 Vue.use(BaiduMap, {
   /* 申请的百度密钥，可以在百度地图官网申请 */
   ak: 'OSCnM1z1OLFZMMrqjevm77yy8fbYMxbT'
@@ -29,6 +30,7 @@ Vue.use(ElementUI)
 Vue.use(Antd)
 Vue.use(VCharts)
 Vue.prototype.$axios = axios
+Vue.prototype.$qs = qs
 Vue.config.productionTip = false
 fastClick.attach(document.body)
 /* eslint-disable no-new */
@@ -47,7 +49,7 @@ new Vue({
 
 axios.interceptors.request.use(
   config => {
-    if (config.url === '/login/check' || config.url === '/login') { // 如果是登录和注册操作，则不需要携带header里面的token
+    if (config.url === '/register' || config.url === '/login') { // 如果是登录和注册操作，则不需要携带header里面的token
     } else {
       if (localStorage.getItem('Authorization')) {
         config.headers.Authorization = localStorage.getItem('Authorization')
@@ -69,20 +71,20 @@ axios.interceptors.response.use(
       switch (error.response.status) {
         case 401:
           localStorage.removeItem('Authorization')
-          _this.$router.push('/')
+          _this.$router.push('/login')
       }
     }
   }
 )
 // 异步请求前判断请求的连接是否需要token
 router.beforeEach((to, from, next) => {
-  if (to.path === '/') {
+  if (to.path === '/login') {
     next()
   } else {
     let token = localStorage.getItem('Authorization')
     console.log('我是浏览器本地缓存的token: ' + token)
     if (token === 'null' || token === '') {
-      next('/')
+      next('/login')
     } else {
       next()
     }
