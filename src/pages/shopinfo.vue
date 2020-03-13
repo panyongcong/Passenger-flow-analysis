@@ -36,6 +36,32 @@ export default {
       }, {enableHighAccuracy: true})
 
       window.map = map
+      this.getshop()
+    },
+    getshop () {
+      this.$axios.get('http://47.112.255.207:8081/findShop', {
+        Headers: {
+          'Authorization': ' '
+        },
+        crossDomain: true
+      }).then(res => {
+        if (res.data.code === 200) {
+          console.log(res.data.data)
+          for (let i = 0; i < res.data.data.length; i++) {
+            let lng = res.data.data[i].longitude
+            let lat = res.data.data[i].latitude
+            var myMarker = new BMap.Marker(new BMap.Point(lng, lat))
+            var gc = new BMap.Geocoder()
+            var point = new BMap.Point(lng, lat)
+            gc.getLocation(point, res => {
+              window.map.addOverlay(myMarker)
+            })
+          }
+        }
+        if (res.data.code === 401) {
+          alert('返回店铺失败')
+        }
+      })
     },
     getClickInfo (e) {
       if (this.flag === 1) {
@@ -55,7 +81,27 @@ export default {
             cancelButtonClass: '取消',
             type: 'warning'
           }).then(() => {
+            let locData = _this.$qs.stringify(_this.locData)
             window.map.addOverlay(myMarker)
+            this.$axios({
+              method: 'post',
+              url: 'http://47.112.255.207:8081/insertShop',
+              data: locData,
+              Headers: {
+                'Authorization': ' '
+              },
+              crossDomain: true
+            }).then(res => {
+              if (res.data.code === 401) {
+                alert('此处店铺已被添加,请不要重复添加')
+              }
+              if (res.data.code === 402) {
+                alert('添加店铺异常')
+              }
+            }).then(error => {
+              console.log('登录失败')
+              console.log(error)
+            })
           }).catch(() => {
           })
         })
@@ -68,20 +114,6 @@ export default {
       this.flag = 1
       this.$alert('点击地图即可添加店面', '提示', {
         confirmButtonText: '确定'
-      })
-      this.$axios({
-        method: 'get',
-        url: 'http://47.112.255.207:8081/test',
-        Headers: {
-          'Authorization': ' '
-        },
-        crossDomain: true
-      }).then(res => {
-        console.log(res.data)
-        alert('成功')
-      }).catch(error => {
-        console.log('失败')
-        console.log(error)
       })
     }
   }

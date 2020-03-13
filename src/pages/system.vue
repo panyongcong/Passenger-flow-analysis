@@ -1,12 +1,29 @@
 <template>
   <div class="app-container">
     <div class="address-layout">
+      <div class="layout-head">
+        <div class="empty">
+        </div>
+        <div class="shopaddress">
+          <el-select v-model="shopaddress" style="width: 150px" @change="changeaddress">
+            <el-option v-for="(item, index) in addressdata"
+                       :key="index"
+                       :value="item.label"
+                       :label="item.label"></el-option>
+          </el-select>
+        </div>
+        <div class="empty">
+        </div>
+        <div class="username">
+          <el-tag type="success">用户名：{{username}}</el-tag>
+        </div>
+      </div>
       <el-row :gutter="20">
         <el-col :span="6">
           <div class="out-border">
             <div class="layout-title">人流量</div>
             <div class="color-main address-content">
-              <div>50</div>
+              <div>{{walkerNumber}}</div>
             </div>
           </div>
         </el-col>
@@ -14,7 +31,7 @@
           <div class="out-border">
             <div class="layout-title">客流量</div>
             <div class="color-main address-content">
-              <div>50</div>
+              <div>{{consumerNumber}}</div>
             </div>
           </div>
         </el-col>
@@ -22,7 +39,7 @@
           <div class="out-border">
             <div class="layout-title">跳出量</div>
             <div class="color-main address-content">
-              <div>50</div>
+              <div>{{jmpOut}}</div>
             </div>
           </div>
         </el-col>
@@ -32,15 +49,7 @@
           <div class="out-border">
             <div class="layout-title">新顾客</div>
             <div class="color-main address-content">
-              <div>50</div>
-            </div>
-          </div>
-        </el-col>
-        <el-col :span="6">
-          <div class="out-border">
-            <div class="layout-title">老顾客</div>
-            <div class="color-main address-content">
-              <div>50</div>
+              <div>{{newConsumer}}</div>
             </div>
           </div>
         </el-col>
@@ -48,73 +57,32 @@
           <div class="out-border">
             <div class="layout-title">当前店内顾客</div>
             <div class="color-main address-content">
-              <div>50</div>
+              <div>{{dynamicConsumer}}</div>
             </div>
           </div>
         </el-col>
       </el-row>
     </div>
     <div class="statistics-layout">
-      <div class="layout-title">客流统计</div>
+      <div class="layout-title">小时客流量统计</div>
       <el-row>
-        <el-col :span="4">
-          <div style="padding: 20px">
-            <div>
-              <div style="color: #909399;font-size: 14px">本月顾客总数</div>
-              <div style="color: #606266;font-size: 24px;padding: 10px 0">10000</div>
-              <div>
-                <span class="color-success" style="font-size: 14px">+10%</span>
-                <span style="color: #C0C4CC;font-size: 14px">同比上月</span>
-              </div>
-            </div>
-            <div style="margin-top: 20px;">
-              <div style="color: #909399;font-size: 14px">本周顾客总数</div>
-              <div style="color: #606266;font-size: 24px;padding: 10px 0">1000</div>
-              <div>
-                <span class="color-danger" style="font-size: 14px">-10%</span>
-                <span style="color: #C0C4CC;font-size: 14px">同比上周</span>
-              </div>
-            </div>
-            <div style="margin-top: 20px;">
-              <div style="color: #909399;font-size: 14px">本月新顾客数</div>
-              <div style="color: #606266;font-size: 24px;padding: 10px 0">100000</div>
-              <div>
-                <span class="color-success" style="font-size: 14px">+10%</span>
-                <span style="color: #C0C4CC;font-size: 14px">同比上月</span>
-              </div>
-            </div>
-            <div style="margin-top: 20px;">
-              <div style="color: #909399;font-size: 14px">本周新顾客数</div>
-              <div style="color: #606266;font-size: 24px;padding: 10px 0">50000</div>
-              <div>
-                <span class="color-danger" style="font-size: 14px">-10%</span>
-                <span style="color: #C0C4CC;font-size: 14px">同比上周</span>
-              </div>
-            </div>
-          </div>
-        </el-col>
         <el-col :span="20">
-          <div style="padding: 10px;border-left:1px solid #DCDFE6">
+          <div style="padding: 10px;border-left:1px solid #DCDFE6; width: 100%;">
             <el-date-picker
               style="float: right;z-index: 1"
-              size="small"
-              v-model="orderCountDate"
-              type="daterange"
+              @change="changeday"
+              v-model="value"
               align="right"
-              unlink-panels
-              range-separator="至"
-              start-placeholder="开始日期"
-              end-placeholder="结束日期"
-              @change="handleDateChange"
+              type="date"
+              placeholder="选择日期"
+              value-format="yyyy-MM-dd"
               :picker-options="pickerOptions">
             </el-date-picker>
             <div>
               <ve-line
                 :data="chartData"
-                :legend-visible="false"
-                :loading="loading"
-                :data-empty="dataEmpty"
-                :settings="chartSettings">
+                :settings="chartSettings"
+                :grid="grid">
               </ve-line>
             </div>
           </div>
@@ -122,26 +90,25 @@
       </el-row>
     </div>
     <div class="statistics-layout">
-      <div class="layout-title">小时客流统计</div>
+      <div class="layout-title">小时进店量统计</div>
       <el-row>
-        <el-col :span="4">
-          <div style="padding: 20px">
-            <div>
-              <div style="color: #909399;font-size: 14px">当前小时顾客总数</div>
-              <div style="color: #606266;font-size: 24px;padding: 10px 0">10000</div>
-              <div>
-                <span class="color-success" style="font-size: 14px">+10%</span>
-                <span style="color: #C0C4CC;font-size: 14px">同比上小时</span>
-              </div>
-            </div>
-          </div>
-        </el-col>
         <el-col :span="20">
-          <div style="padding: 10px;border-left:1px solid #DCDFE6">
+          <div style="padding: 10px;border-left:1px solid #DCDFE6; width: 100%;">
+            <el-date-picker
+              style="float: right;z-index: 1"
+              @change="changeday1"
+              v-model="value2"
+              align="right"
+              type="date"
+              placeholder="选择日期"
+              value-format="yyyy-MM-dd"
+              :picker-options="pickerOptions1">
+            </el-date-picker>
             <div>
               <ve-line
                 :data="chartData1"
-                :settings="chartSettings1">
+                :settings="chartSettings1"
+                :grid="grid">
               </ve-line>
             </div>
           </div>
@@ -151,112 +118,227 @@
   </div>
 </template>
 <script>
-import {str2Date} from '@/utils/date'
-const DATA_FROM_BACKEND = {
-  columns: ['date', 'DayCount'],
-  rows: [
-    {date: '2018-11-01', DayCount: 10},
-    {date: '2018-11-02', DayCount: 20},
-    {date: '2018-11-03', DayCount: 33},
-    {date: '2018-11-04', DayCount: 50},
-    {date: '2018-11-05', DayCount: 80},
-    {date: '2018-11-06', DayCount: 60},
-    {date: '2018-11-07', DayCount: 20},
-    {date: '2018-11-08', DayCount: 60},
-    {date: '2018-11-09', DayCount: 50},
-    {date: '2018-11-10', DayCount: 30},
-    {date: '2018-11-11', DayCount: 20},
-    {date: '2018-11-12', DayCount: 80},
-    {date: '2018-11-13', DayCount: 100},
-    {date: '2018-11-14', DayCount: 10},
-    {date: '2018-11-15', DayCount: 40}
-  ]
-}
 export default {
   name: 'system',
   data () {
     return {
-      pickerOptions: {shortcuts: [{
-        text: '最近一周',
-        onClick (picker) {
-          const end = new Date()
-          let start = new Date()
-          start.setFullYear(2018)
-          start.setMonth(10)
-          start.setDate(1)
-          end.setTime(start.getTime() + 3600 * 1000 * 24 * 7)
-          picker.$emit('pick', [start, end])
-        }
-      }, {
-        text: '最近一月',
-        onClick (picker) {
-          const end = new Date()
-          let start = new Date()
-          start.setFullYear(2018)
-          start.setMonth(10)
-          start.setDate(1)
-          end.setTime(start.getTime() + 3600 * 1000 * 24 * 30)
-          picker.$emit('pick', [start, end])
-        }
-      }]},
+      value: '',
+      value2: '',
+      shopaddress: '',
       orderCountDate: '',
       chartSettings: {
         xAxisType: 'time',
         area: true,
-        axisSite: {right: ['DayCount']},
-        labelMap: {'DayCount': '一天顾客数'}},
+        axisSite: {left: ['每个小时的客流量']},
+        labelMap: {'每个小时的客流量': '每个小时的客流量'}},
       chartSettings1: {
         xAxisType: 'time',
         area: true,
-        axisSite: {right: ['DayCount']},
-        labelMap: {'DayCount': '小时顾客数'}},
+        axisSite: {left: ['每个小时的进店量']},
+        labelMap: {'每个小时的进店量': '每个小时的进店量'}},
       chartData: {
         columns: [],
         rows: []
+      },
+      grid: {
+        right: '10%'
       },
       chartData1: {
         columns: [],
         rows: []
       },
       loading: false,
-      dataEmpty: false
+      dataEmpty: false,
+      walkerNumber: '',
+      consumerNumber: '',
+      newConsumer: '',
+      jmpOut: '',
+      dynamicConsumer: '',
+      pickerOptions: {disabledDate (time) {
+        return time.getTime() > Date.now()
+      },
+      shortcuts: [{
+        text: '今天',
+        onClick (picker) {
+          picker.$emit('pick', new Date())
+        }
+      }, {
+        text: '昨天',
+        onClick (picker) {
+          const date = new Date()
+          date.setTime(date.getTime() - 3600 * 1000 * 24)
+          picker.$emit('pick', date)
+        }
+      }, {
+        text: '一周前',
+        onClick (picker) {
+          const date = new Date()
+          date.setTime(date.getTime() - 3600 * 1000 * 24 * 7)
+          picker.$emit('pick', date)
+        }
+      }]},
+      pickerOptions1: {
+        disabledDate (time) {
+          return time.getTime() > Date.now()
+        },
+        shortcuts: [{
+          text: '今天',
+          onClick (picker) {
+            picker.$emit('pick', new Date())
+          }
+        }, {
+          text: '昨天',
+          onClick (picker) {
+            const date = new Date()
+            date.setTime(date.getTime() - 3600 * 1000 * 24)
+            picker.$emit('pick', date)
+          }
+        }, {
+          text: '一周前',
+          onClick (picker) {
+            const date = new Date()
+            date.setTime(date.getTime() - 3600 * 1000 * 24 * 7)
+            picker.$emit('pick', date)
+          }
+        }]
+      },
+      username: '',
+      addressdata: []
     }
   },
   created () {
-    this.initOrderCountDate()
+    this.gettoday()
     this.getData()
   },
   methods: {
-    handleDateChange () {
-      this.getData()
-    },
-    initOrderCountDate () {
-      let start = new Date()
-      start.setFullYear(2018)
-      start.setMonth(10)
-      start.setDate(1)
-      const end = new Date()
-      end.setTime(start.getTime() + 1000 * 60 * 60 * 24 * 7)
-      this.orderCountDate = [start, end]
-    },
     getData () {
-      setTimeout(() => {
-        this.chartData = {
-          columns: ['date', 'DayCount'],
-          rows: []
-        }
-        for (let i = 0; i < DATA_FROM_BACKEND.rows.length; i++) {
-          let item = DATA_FROM_BACKEND.rows[i]
-          let currDate = str2Date(item.date)
-          let start = this.orderCountDate[0]
-          let end = this.orderCountDate[1]
-          if (currDate.getTime() >= start.getTime() && currDate.getTime() <= end.getTime()) {
-            this.chartData.rows.push(item)
+      this.shopaddress = localStorage.getItem('address')
+      this.username = localStorage.getItem('username')
+      this.$axios({
+        method: 'get',
+        url: 'http://47.112.255.207:8081/findShop',
+        Headers: {
+          'Authorization': ' '
+        },
+        crossDomain: true
+      }).then(res => {
+        console.log(res.data.code)
+        if (res.data.code === 200) {
+          console.log(res.data.data.length)
+          console.log(res.data.data)
+          for (let i = 0; i < res.data.data.length; i++) {
+            let add = {}
+            add.value = i
+            add.label = res.data.data[i].address
+            console.log(add)
+            this.addressdata.push(add)
           }
         }
-        this.dataEmpty = false
-        this.loading = false
-      }, 1000)
+      }).catch(err => {
+        console.log(err)
+      })
+    },
+    changeaddress () {
+      localStorage.setItem('address', this.shopaddress)
+      this.gettoday()
+    },
+    gettoday () {
+      var aData = new Date()
+      this.value = aData.getFullYear() + '-' + (aData.getMonth() + 1) + '-' + aData.getDate()
+      this.value2 = aData.getFullYear() + '-' + (aData.getMonth() + 1) + '-' + aData.getDate()
+      this.shopaddress = localStorage.getItem('address')
+      this.getcustomerdata()
+      this.getChartdata()
+      this.getPassengerflow()
+    },
+    changeday1 () {
+      this.getChartdata()
+    },
+    changeday () {
+      this.getPassengerflow()
+    },
+    getPassengerflow () {
+      this.$axios.get('http://47.112.255.207:8081/getCustomerPerHour', {
+        Headers: {
+          'Authorization': ' '
+        },
+        params: {
+          address: this.shopaddress,
+          dateTime: this.value
+        },
+        crossDomain: true
+      }).then(res => {
+        this.chartData = {
+          columns: ['小时', '每个小时的客流量'],
+          rows: []
+        }
+        console.log(res.data.data)
+        for (let i = 0; i < res.data.data.length; i++) {
+          let add = {}
+          if (res.data.data[i].Hours === 0) {
+            add.小时 = this.value + ' ' + res.data.data[i].hours + '0:00:00'
+          } else {
+            add.小时 = this.value + ' ' + res.data.data[i].hours + ':00:00'
+          }
+          add.每个小时的客流量 = res.data.data[i].hour_customer_number
+          this.chartData.rows.push(add)
+        }
+        console.log(this.chartData.rows)
+      }).catch(error => {
+        console.log('失败')
+        console.log(error)
+      })
+    },
+    getcustomerdata () {
+      this.$axios.get('http://47.112.255.207:8081/getMainData', {
+        Headers: {
+          'Authorization': ' '
+        },
+        params: {
+          address: this.shopaddress,
+          dateTime: this.value2
+        },
+        crossDomain: true
+      }).then(res => {
+        this.walkerNumber = res.data.data.walkerNumber
+        this.consumerNumber = res.data.data.consumerNumber
+        this.newConsumer = res.data.data.newConsumer
+        this.jmpOut = res.data.data.jmpOut
+        this.dynamicConsumer = res.data.data.dynamicConsumer
+      }).catch(error => {
+        console.log('失败')
+        console.log(error)
+      })
+    },
+    getChartdata () {
+      this.$axios.get('http://47.112.255.207:8081/getInCustomerPerHour', {
+        Headers: {
+          'Authorization': ' '
+        },
+        params: {
+          address: this.shopaddress,
+          dateTime: this.value2
+        },
+        crossDomain: true
+      }).then(res => {
+        this.chartData1 = {
+          columns: ['小时', '每个小时的进店量'],
+          rows: []
+        }
+        for (let i = 0; i < res.data.data.length; i++) {
+          let add = {}
+          if (res.data.data[i].hours === 0) {
+            add.小时 = this.value2 + ' ' + res.data.data[i].hours + '0:00:00'
+          } else {
+            add.小时 = this.value2 + ' ' + res.data.data[i].hours + ':00:00'
+          }
+          add.每个小时的进店量 = res.data.data[i].hour_in_customer_number
+          this.chartData1.rows.push(add)
+        }
+      }).catch(error => {
+        console.log('失败')
+        console.log(error)
+      })
     }
   }
 
@@ -287,5 +369,25 @@ export default {
   .address-content{
     padding: 20px;
     font-size: 18px
+  }
+  .layout-head{
+    height: 50px;
+    width: 100%;
+    border-bottom: 50px;
+  }
+  .shopaddress{
+    float: right;
+    height: 50px;
+    width: 150px;
+  }
+  .empty{
+    float: right;
+    height: 50px;
+    width: 50px;
+  }
+  .username{
+    float: right;
+    height: 50px;
+    width: 50px;
   }
 </style>
