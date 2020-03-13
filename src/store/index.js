@@ -4,7 +4,12 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     // 存储token
-    Authorization: localStorage.getItem('Authorization') ? localStorage.getItem('Authorization') : ''
+    Authorization: localStorage.getItem('Authorization') ? localStorage.getItem('Authorization') : '',
+    walkerNumber: '',
+    consumerNumber: '',
+    newConsumer: '',
+    jmpOut: '',
+    dynamicConsumer: ''
   },
   mutations: {
     // 修改token，并将token存入localStorage

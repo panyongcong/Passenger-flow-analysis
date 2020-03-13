@@ -31,25 +31,6 @@ export default {
 }
 </script>
 <style>
-  .layout-head{
-    height: 50px;
-    width: 100%;
-  }
-  .shopaddress{
-    float: right;
-    height: 50px;
-    width: 150px;
-  }
-  .empty{
-    float: right;
-    height: 50px;
-    width: 50px;
-  }
-  .username{
-    float: right;
-    height: 50px;
-    width: 50px;
-  }
   .index-container {
     height: 100%;
   }

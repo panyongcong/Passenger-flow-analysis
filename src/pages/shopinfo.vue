@@ -5,6 +5,23 @@
       <baidu-map :center="center" :zoom="zoom" @click="getClickInfo" @ready="handler" style="height:1080px" :scroll-wheel-zoom='true'>
       </baidu-map>
     </div>
+    <el-dialog title="店铺信息" :visible.sync="dialogTableVisible">
+      <el-form>
+        <el-form-item>
+          <el-table :data="gridData" style="border-bottom: 15px">
+            <el-table-column property="walkerNumber" label="人流量"></el-table-column>
+            <el-table-column property="consumerNumber" label="客流量"></el-table-column>
+            <el-table-column property="newConsumer" label="新客人量"></el-table-column>
+            <el-table-column property="jmpOut" label="跳出量"></el-table-column>
+            <el-table-column property="dynamicConsumer" label="当前店内客人量"></el-table-column>
+          </el-table>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" icon="el-icon-delete" @click="deleteshop">删除该门店信息</el-button>
+          <el-button type="primary" icon="el-icon-search" style="float: right">查看店内数据</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -21,7 +38,17 @@ export default {
         latitude: '',
         address: ''
       },
-      flag: 0
+      flag: 0,
+      dialogTableVisible: false,
+      gridData: [{
+        walkerNumber: '',
+        consumerNumber: '',
+        newConsumer: '',
+        jmpOut: '',
+        dynamicConsumer: ''
+      }],
+      clickedshopaddress: '',
+      showaddress: ''
     }
   },
   methods: {
@@ -50,11 +77,16 @@ export default {
           for (let i = 0; i < res.data.data.length; i++) {
             let lng = res.data.data[i].longitude
             let lat = res.data.data[i].latitude
-            var myMarker = new BMap.Marker(new BMap.Point(lng, lat))
-            var gc = new BMap.Geocoder()
-            var point = new BMap.Point(lng, lat)
+            console.log(lng)
+            console.log(lat)
+            let myMarker = new BMap.Marker(new BMap.Point(lng, lat))
+            let gc = new BMap.Geocoder()
+            let point = new BMap.Point(lng, lat)
+            let address = res.data.data[i].address
             gc.getLocation(point, res => {
               window.map.addOverlay(myMarker)
+              this.addClickHandler(myMarker, address)
+              this.addMouseover(myMarker, address, point)
             })
           }
         }
@@ -114,6 +146,92 @@ export default {
       this.flag = 1
       this.$alert('点击地图即可添加店面', '提示', {
         confirmButtonText: '确定'
+      })
+    },
+    addClickHandler (myMarker, address) {
+      this.clickedshopaddress = address
+      myMarker.addEventListener('click', e => {
+        let aData = new Date()
+        let value = aData.getFullYear() + '-' + (aData.getMonth() + 1) + '-' + aData.getDate()
+        this.$axios.get('http://47.112.255.207:8081/getMainData', {
+          Headers: {
+            'Authorization': ' '
+          },
+          params: {
+            address: address,
+            dateTime: value
+          },
+          crossDomain: true
+        }).then(res => {
+          this.gridData[0].walkerNumber = res.data.data.walkerNumber
+          this.gridData[0].consumerNumber = res.data.data.consumerNumber
+          this.gridData[0].newConsumer = res.data.data.newConsumer
+          this.gridData[0].jmpOut = res.data.data.jmpOut
+          this.gridData[0].dynamicConsumer = res.data.data.dynamicConsumer
+        }).catch(error => {
+          console.log('失败')
+          console.log(error)
+        })
+        this.dialogTableVisible = true
+      })
+    },
+    deleteshop () {
+      let message = '确定删除地址为：' + this.clickedshopaddress + '的店铺吗?'
+      MessageBox.confirm(message, '提示', {
+        showCancelButton: true,
+        confirmButtonText: '确定',
+        cancelButtonClass: '取消',
+        type: 'warning'
+      })
+    },
+    addMouseover (myMarker, address, point) {
+      let opts = {
+        width: 50,
+        height: 50,
+        title: '当前店内人数'
+      }
+      var context = ''
+      myMarker.addEventListener('mouseover', e => {
+        this.$axios.get('http://47.112.255.207:8081/showDynamicCustomer', {
+          Headers: {
+            'Authorization': ' '
+          },
+          params: {
+            address: address
+          },
+          crossDomain: true
+        }).then(res => {
+          context = res.data.data
+        }).catch(err => {
+          console.log(err)
+        })
+        var shopadd = '<table>'
+        shopadd = shopadd + '<tr><td> 店内人数：' + context + '</td></tr>'
+        shopadd += '</table>'
+        let infoWindow = new BMap.InfoWindow(shopadd, opts)
+        window.map.openInfoWindow(infoWindow, e)
+      })
+      myMarker.addEventListener('mouseout', function () {
+        var shopadd = '<table>'
+        shopadd = shopadd + '<tr><td> 店内人数：' + context + '</td></tr>'
+        shopadd += '</table>'
+        let infoWindow = new BMap.InfoWindow(shopadd, opts)
+        window.map.openInfoWindow(infoWindow, point)
+      })
+    },
+    getshowaddress (address) {
+      this.$axios.get('http://47.112.255.207:8081/showDynamicCustomer', {
+        Headers: {
+          'Authorization': ' '
+        },
+        params: {
+          address: address
+        },
+        crossDomain: true
+      }).then(res => {
+        this.showaddress = res.data.data
+      }).catch(err => {
+        console.log(err)
       })
     }
   }
