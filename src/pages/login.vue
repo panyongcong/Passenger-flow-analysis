@@ -2,7 +2,7 @@
   <div class="login">
     <div class="login-con">
       <el-form
-        style="margin-top: 40px"
+        style="margin-top: 40px;width: 100%"
         :model="loginForm"
         status-icon
         :rules="ruls"
@@ -13,19 +13,11 @@
           <el-input v-model.number="loginForm.username" style="width: 100%"></el-input>
         </el-form-item>
         <el-form-item label="密码" prop="password">
-          <el-input type="password" v-model="loginForm.password" autocomplete="off" style="width: 100%" @blur="getloginaddress"></el-input>
+          <el-input type="password" v-model="loginForm.password" autocomplete="off" style="width: 100%"></el-input>
         </el-form-item>
-        <el-form-item label="店铺位置" style="width: 100%" v-if="ok">
-          <el-select v-model="loginForm.address" placeholder="请选择位置" style="width: 100%">
-            <el-option v-for="(item, index) in addressdata"
-                       :key="index"
-                       :value="item.label"
-                       :label="item.label"></el-option>
-          </el-select>
-        </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="login" style="width: 70%">登录</el-button>
-          <el-button @click="rgister" style="width: 24%">注册</el-button>
+        <el-form-item style="width: 100%">
+          <el-button type="primary" @click="login" style="width: 45%">登录</el-button>
+          <el-button @click="rgister" style="width:45%;float: right">注册</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -65,10 +57,17 @@ export default {
       flag: false
     }
   },
+  created () {
+    this.init()
+  },
   methods: {
     ...mapMutations(['changeLogin']),
-    getloginaddress () {
-      if (this.loginForm.username === '' || this.loginForm.password === '') { // 失去焦点用户名和密码都不为空时获取店铺地址
+    init () {
+      this.$store.commit('addshopflag', {shopflag: false})
+    },
+    login () {
+      if (this.loginForm.username === '' || this.loginForm.password === '') {
+        alert('账号和密码不能为空')
       } else {
         let _this = this
         let loginForm = this.$qs.stringify(this.loginForm)
@@ -82,74 +81,36 @@ export default {
           crossDomain: true
         }).then(res => {
           _this.userToken = res.data.data.token
-          sessionStorage.setItem('name', _this.loginForm.username)
-          console.log(res.data.data.token)
-          console.log(res.data.data.uid)
           _this.changeLogin({ Authorization: this.userToken })
           if (res.data.code === 200) {
+            localStorage.setItem('name', this.loginForm.username)
             _this.flag = true
             if (res.data.data.uid === '1') {
               let UserRole = 'admin'
+              this.ok = false
               localStorage.setItem('userRole', UserRole)
+              _this.$router.push('/profile')
             }
             if (res.data.data.uid === '2') {
               let UserRole = 'boss'
               localStorage.setItem('userRole', UserRole)
-              this.getbossaddress()
+              _this.$router.push('/system')
             }
             if (res.data.data.uid === '3') {
-              _this.loginForm.address = res.data.data.address
+              localStorage.setItem('address', res.data.data.address)
               let UserRole = 'staff'
               localStorage.setItem('userRole', UserRole)
+              _this.$router.push('/system')
             }
           }
           if (res.data.code === 401) {
+            alert('账号密码错误')
           }
         }).catch(error => {
+          alert('登录失败')
           console.log('登录失败')
           console.log(error)
         })
-      }
-    },
-    getbossaddress () {
-      this.$axios({
-        method: 'get',
-        url: 'http://47.112.255.207:8081/findShop',
-        Headers: {
-          'Authorization': ' '
-        },
-        crossDomain: true
-      }).then(res => {
-        console.log(res.data.code)
-        if (res.data.code === 200) {
-          console.log(res.data.data.length)
-          console.log(res.data.data)
-          for (let i = 0; i < res.data.data.length; i++) {
-            let add = {}
-            add.value = i
-            add.label = res.data.data[i].address
-            console.log(add)
-            this.addressdata.push(add)
-          }
-          console.log(this.addressdata)
-          this.ok = true
-        }
-      }).catch(err => {
-        console.log(err)
-      })
-    },
-    login () {
-      if (this.flag === true) {
-        if (this.loginForm.address === '') {
-          alert('请选择店铺位置')
-        } else {
-          localStorage.setItem('address', this.loginForm.address)
-          localStorage.setItem('username', this.loginForm.username)
-          this.$router.push('/system')
-        }
-      }
-      if (this.flag === false) {
-        alert('账号或密码错误')
       }
     },
     rgister () {

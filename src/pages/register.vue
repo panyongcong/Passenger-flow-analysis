@@ -128,6 +128,7 @@ export default {
           alert('注册失败，请与管理员联系')
         }
         if (res.data.code === 200) {
+          this.$router.push('/')
           alert('注册成功')
         }
       }).catch(error => {
@@ -156,7 +157,6 @@ export default {
         },
         crossDomain: true
       }).then(res => {
-        console.log(res.data)
         if (res.data.code === 401) {
           alert('该店主还没有添加任何店铺,或者该店主还没有注册请核对店主信息')
         }
@@ -164,13 +164,10 @@ export default {
           alert('查询店铺失败')
         }
         if (res.data.code === 200) {
-          console.log(res.data.data.address.length)
-          console.log(res.data.data.address)
           for (let i = 0; i < res.data.data.address.length; i++) {
             let add = {}
             add.value = i
             add.label = res.data.data.address[i]
-            console.log(add)
             this.shopaddress.push(add)
           }
           console.log(this.shopaddress)

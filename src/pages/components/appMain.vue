@@ -12,7 +12,6 @@ export default {
     return {}
   },
   computed: {},
-  watch: {},
   methods: {},
   created () {
   },

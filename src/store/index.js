@@ -5,11 +5,10 @@ export default new Vuex.Store({
   state: {
     // 存储token
     Authorization: localStorage.getItem('Authorization') ? localStorage.getItem('Authorization') : '',
-    walkerNumber: '',
-    consumerNumber: '',
-    newConsumer: '',
-    jmpOut: '',
-    dynamicConsumer: ''
+    rssi: '-50',
+    leastRssi: '-100',
+    shopname: '',
+    shopflag: false
   },
   mutations: {
     // 修改token，并将token存入localStorage
@@ -17,6 +16,16 @@ export default new Vuex.Store({
       state.Authorization = user.Authorization
       console.log('store/index.js---到这里了!')
       localStorage.setItem('Authorization', user.Authorization)
+    },
+    addrssi (state, user) {
+      state.rssi = user.rssi
+      state.leastRssi = user.leastRssi
+    },
+    addshopname (state, user) {
+      state.shopname = user.shopname
+    },
+    addshopflag (state, user) {
+      state.shopflag = user.shopflag
     }
   }
 })

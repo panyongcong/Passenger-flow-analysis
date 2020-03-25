@@ -47,6 +47,16 @@ const router = new Router({
           path: '/probeinfo',
           name: 'probeinfo',
           component: () => import('@/pages/probeinfo')
+        },
+        {
+          path: '/Administrators',
+          name: 'Administrators',
+          component: () => import('@/pages/Administrators')
+        },
+        {
+          path: '/Probelist',
+          name: 'Probelist',
+          component: () => import('@/pages/Probelist')
         }
       ]
     },
@@ -57,6 +67,31 @@ const router = new Router({
     }
   ]
 })
+/*
+export const fixedRouter = [{
+  path: '/',
+  name: 'login',
+  component: login
+},
+{
+  path: '/home',
+  name: 'home',
+  meta: {
+    requireAuth: true
+  },
+  component: home, // 整体页面的布局(包含左侧菜单跟主内容区域)
+  children: [{
+    path: 'main',
+    component: main,
+    meta: {
+      title: '首页', // 菜单名称
+      roles: ['user', 'admin'], // 当前菜单哪些角色可以看到
+      icon: 'el-icon-info' // 菜单左侧的icon图标
+    }
+  }]
+}
+]
+*/
 router.beforeEach((to, from, next) => {
   if (to.path === '/login') {
     next()

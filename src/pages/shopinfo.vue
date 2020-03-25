@@ -1,9 +1,11 @@
 <template>
-  <div class="shopinfo-main">
-    <el-button type="primary" round @click="btn">添加店面</el-button>
-    <div class="allmap">
-      <baidu-map :center="center" :zoom="zoom" @click="getClickInfo" @ready="handler" style="height:1080px" :scroll-wheel-zoom='true'>
+  <div class="shopinfo-main" style="position: relative">
+    <div class="allmap" style="position: fixed">
+      <baidu-map :mapClick="false" :center="center" :zoom="zoom" @click="getClickInfo" @ready="handler" style="height:1080px" :scroll-wheel-zoom='true'>
       </baidu-map>
+    </div>
+    <div style="position: absolute;margin-left: 30px;margin-top: 30px">
+      <el-button type="primary" round @click="btn">添加店面</el-button>
     </div>
     <el-dialog title="店铺信息" :visible.sync="dialogTableVisible">
       <el-form>
@@ -18,7 +20,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" icon="el-icon-delete" @click="deleteshop">删除该门店信息</el-button>
-          <el-button type="primary" icon="el-icon-search" style="float: right">查看店内数据</el-button>
+          <el-button type="primary" icon="el-icon-search" @click="checkshop" style="float: right">查看店内数据</el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -30,7 +32,7 @@ export default {
   name: 'shopinfo',
   data () {
     return {
-      center: {lng: 121.833138, lat: 39.081725},
+      center: {lng: '', lat: ''},
       zoom: 12,
       mapVisible: false,
       locData: {
@@ -48,22 +50,54 @@ export default {
         dynamicConsumer: ''
       }],
       clickedshopaddress: '',
-      showaddress: ''
+      showaddress: '',
+      markerba: '',
+      havashop: true // 判断是否有新店铺
     }
+  },
+  mounted () {
+    this.init()
   },
   methods: {
     handler ({BMap, map}) {
       let _this = this // 设置一个临时变量指向vue实例，因为在百度地图回调里使用this，指向的不是vue实例；
       var geolocation = new BMap.Geolocation()
       geolocation.getCurrentPosition(function (r) {
-        console.log(r)
-        _this.center = {lng: r.longitude, lat: r.latitude} // 设置center属性值
+        if (_this.havashop === false) {
+          _this.center = {lng: r.longitude, lat: r.latitude}
+        }
         _this.autoLocationPoint = {lng: r.longitude, lat: r.latitude} // 自定义覆盖物
-        _this.initLocation = true
+        _this.initLocation = false
       }, {enableHighAccuracy: true})
-
       window.map = map
       this.getshop()
+    },
+    init () {
+      this.$axios.get('http://47.112.255.207:8081/findShop', {
+        Headers: {
+          'Authorization': ' '
+        },
+        crossDomain: true
+      }).then(res => {
+        console.log(res.data.code)
+        if (res.data.code === 200) {
+          this.havashop = true
+          if (res.data.data.length !== 0) {
+            this.center.lat = res.data.data[0].latitude
+            this.center.lng = res.data.data[0].longitude
+          }
+        }
+        if (res.data.code === 444) {
+          alert('未登录')
+          this.$router.push('/')
+        }
+        if (res.data.code === 402) {
+          this.havashop = false
+        }
+      }).catch(error => {
+        console.log('失败')
+        console.log(error)
+      })
     },
     getshop () {
       this.$axios.get('http://47.112.255.207:8081/findShop', {
@@ -73,12 +107,9 @@ export default {
         crossDomain: true
       }).then(res => {
         if (res.data.code === 200) {
-          console.log(res.data.data)
           for (let i = 0; i < res.data.data.length; i++) {
             let lng = res.data.data[i].longitude
             let lat = res.data.data[i].latitude
-            console.log(lng)
-            console.log(lat)
             let myMarker = new BMap.Marker(new BMap.Point(lng, lat))
             let gc = new BMap.Geocoder()
             let point = new BMap.Point(lng, lat)
@@ -87,12 +118,20 @@ export default {
               window.map.addOverlay(myMarker)
               this.addClickHandler(myMarker, address)
               this.addMouseover(myMarker, address, point)
+              this.addMouseout(myMarker, address, point)
             })
           }
+        }
+        if (res.data.code === 444) {
+          alert('未登录')
+          this.$router.push('/')
         }
         if (res.data.code === 401) {
           alert('返回店铺失败')
         }
+      }).catch(error => {
+        console.log('失败')
+        console.log(error)
       })
     },
     getClickInfo (e) {
@@ -105,7 +144,6 @@ export default {
           _this.locData.address = res.address
           _this.locData.longitude = point.lng
           _this.locData.latitude = point.lat
-          console.log(_this.locData.address) // 地址信息
           var mes = '确定要在:' + '经度:' + _this.locData.longitude + +'  ' + '维度:' + _this.locData.latitude + '  ' + _this.locData.address + '添加店铺吗？'
           MessageBox.confirm(mes, '提示', {
             showCancelButton: true,
@@ -113,8 +151,8 @@ export default {
             cancelButtonClass: '取消',
             type: 'warning'
           }).then(() => {
+            _this.locData.address = _this.locData.address + '店'
             let locData = _this.$qs.stringify(_this.locData)
-            window.map.addOverlay(myMarker)
             this.$axios({
               method: 'post',
               url: 'http://47.112.255.207:8081/insertShop',
@@ -124,11 +162,18 @@ export default {
               },
               crossDomain: true
             }).then(res => {
+              if (res.data.code === 200) {
+                window.map.addOverlay(myMarker)
+              }
               if (res.data.code === 401) {
                 alert('此处店铺已被添加,请不要重复添加')
               }
               if (res.data.code === 402) {
                 alert('添加店铺异常')
+              }
+              if (res.data.code === 444) {
+                alert('未登录')
+                this.$router.push('/')
               }
             }).then(error => {
               console.log('登录失败')
@@ -149,8 +194,9 @@ export default {
       })
     },
     addClickHandler (myMarker, address) {
-      this.clickedshopaddress = address
       myMarker.addEventListener('click', e => {
+        this.clickedshopaddress = address
+        this.markerba = myMarker.ba
         let aData = new Date()
         let value = aData.getFullYear() + '-' + (aData.getMonth() + 1) + '-' + aData.getDate()
         this.$axios.get('http://47.112.255.207:8081/getMainData', {
@@ -163,6 +209,10 @@ export default {
           },
           crossDomain: true
         }).then(res => {
+          if (res.data.code === 444) {
+            alert('未登录')
+            this.$router.push('/')
+          }
           this.gridData[0].walkerNumber = res.data.data.walkerNumber
           this.gridData[0].consumerNumber = res.data.data.consumerNumber
           this.gridData[0].newConsumer = res.data.data.newConsumer
@@ -182,7 +232,31 @@ export default {
         confirmButtonText: '确定',
         cancelButtonClass: '取消',
         type: 'warning'
-      })
+      }).then(() => {
+        var param = {address: this.clickedshopaddress}
+        this.$axios.delete('http://47.112.255.207:8081/delectShop', {params: param}).then(res => {
+          if (res.data.code === 200) {
+            var allOverlay = window.map.getOverlays()
+            for (let i = 0; i < allOverlay.length; i++) {
+              if (allOverlay[i].ba === this.markerba) {
+                window.map.removeOverlay(allOverlay[i])
+              }
+            }
+            this.dialogTableVisible = false
+            alert('删除成功')
+          }
+          if (res.data.code === 444) {
+            alert('未登录')
+            this.$router.push('/')
+          }
+          if (res.data.code === 401) {
+            alert('删除失败')
+          }
+        }).catch(error => {
+          console.log('失败')
+          console.log(error)
+        })
+      }).catch()
     },
     addMouseover (myMarker, address, point) {
       let opts = {
@@ -190,7 +264,7 @@ export default {
         height: 50,
         title: '当前店内人数'
       }
-      var context = ''
+      let context = ''
       myMarker.addEventListener('mouseover', e => {
         this.$axios.get('http://47.112.255.207:8081/showDynamicCustomer', {
           Headers: {
@@ -201,45 +275,46 @@ export default {
           },
           crossDomain: true
         }).then(res => {
+          if (res.data.code === 444) {
+            alert('未登录')
+            this.$router.push('/')
+          }
           context = res.data.data
         }).catch(err => {
           console.log(err)
         })
-        var shopadd = '<table>'
-        shopadd = shopadd + '<tr><td> 店内人数：' + context + '</td></tr>'
-        shopadd += '</table>'
-        let infoWindow = new BMap.InfoWindow(shopadd, opts)
-        window.map.openInfoWindow(infoWindow, e)
-      })
-      myMarker.addEventListener('mouseout', function () {
-        var shopadd = '<table>'
+        let shopadd = '<table>'
         shopadd = shopadd + '<tr><td> 店内人数：' + context + '</td></tr>'
         shopadd += '</table>'
         let infoWindow = new BMap.InfoWindow(shopadd, opts)
         window.map.openInfoWindow(infoWindow, point)
       })
     },
-    getshowaddress (address) {
-      this.$axios.get('http://47.112.255.207:8081/showDynamicCustomer', {
-        Headers: {
-          'Authorization': ' '
-        },
-        params: {
-          address: address
-        },
-        crossDomain: true
-      }).then(res => {
-        this.showaddress = res.data.data
-      }).catch(err => {
-        console.log(err)
+    addMouseout (myMarker, address, point) {
+      let context = ''
+      let opts = {
+        width: 50,
+        height: 50,
+        title: '当前店内人数'
+      }
+      myMarker.addEventListener('mouseout', e => {
+        console.log('1')
+        let shopadd = '<table>'
+        shopadd = shopadd + '<tr><td> 店内人数：' + context + '</td></tr>'
+        shopadd += '</table>'
+        let infoWindow = new BMap.InfoWindow(shopadd, opts)
+        window.map.closeInfoWindow(infoWindow, point)
       })
+    },
+    checkshop () {
+      localStorage.setItem('address', this.clickedshopaddress)
+      this.$router.push('/system')
     }
   }
 }
 </script>
 <style>
   .allmap{
-    margin-top: 50px;
     width: 100%;
     height: 100%;
   }

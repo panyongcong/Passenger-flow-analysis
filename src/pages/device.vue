@@ -1,51 +1,107 @@
 <template>
-  <div class="device-main">
-    <div class="device-head">
-      <h4 style="font-family: STKaiti,KaiTi,KaiTi_GB2312,sans-serif">设备管理</h4>
-    </div>
-    <div class="device-table">
-      <el-row>
-        <el-col :span="24">
-          <el-table
-            :data="tableData"
-            border
-            style="width: 100%">
-            <el-table-column
-              prop="name"
-              label="设备名称">
-            </el-table-column>
-            <el-table-column
-              prop="data"
-              label="设备运行最后日期">
-            </el-table-column>
-            <el-table-column
-              prop="address"
-              label="地址">
-            </el-table-column>
-          </el-table>
-        </el-col>
-      </el-row>
-    </div>
-  </div>
+  <el-table :data="tableData"
+            v-loading="listLoading" border>
+    <el-table-column label="店铺名字" align="center">
+      <template slot-scope="scope">{{scope.row.address}}</template>
+    </el-table-column>
+    <el-table-column label="操作" align="center">
+      <template slot-scope="scope">
+        <el-button size="mini"
+                   type="text"
+                   @click="handlecheck(scope.$index, scope.row)">
+          查看
+        </el-button>
+        <el-button size="mini"
+                   type="text"
+                   @click="handleDelete(scope.$index, scope.row)">
+          删除
+        </el-button>
+      </template>
+    </el-table-column>
+  </el-table>
 </template>
 <script>
+import { MessageBox } from 'element-ui'
 export default {
   name: 'device',
   data () {
     return {
-      tableData: []
+      tableData: [],
+      tableData1: [],
+      listLoading: false
+    }
+  },
+  mounted () {
+    this.init()
+  },
+  methods: {
+    init () {
+      this.$axios.get('http://47.112.255.207:8081/findShopByBossName', {
+        Headers: {
+          'Authorization': ' '
+        },
+        params: {
+          username: this.$store.state.shopname
+        },
+        crossDomain: true
+      }).then(res => {
+        if (res.data.code === 402) {
+          alert('查询店铺失败')
+        }
+        if (res.data.code === 401) {
+          alert('该店主还没有添加任何店铺,或者该店主还没有注册请核对店主信息')
+        }
+        if (res.data.code === 200) {
+          this.tableData = []
+          for (let i = 0; i < res.data.data.address.length; i++) {
+            let add = {}
+            add.address = res.data.data.address[i]
+            this.tableData.push(add)
+          }
+          this.tableData1 = this.tableData
+        }
+        if (res.data.code === 444) {
+          alert('未登录')
+          this.$router.push('/')
+        }
+      }).catch(error => {
+        console.log('失败')
+        console.log(error)
+      })
+    },
+    handleDelete (index, rows) {
+      let message = '确定删除地址为：' + this.tableData1[index].address + '的店铺吗?'
+      MessageBox.confirm(message, '提示', {
+        showCancelButton: true,
+        confirmButtonText: '确定',
+        cancelButtonClass: '取消',
+        type: 'warning'
+      }).then(() => {
+        let address = this.tableData1[index].address
+        var param = {address: address}
+        this.$axios.delete('http://47.112.255.207:8081/delectShop', {params: param}).then(res => {
+          if (res.data.code === 200) {
+            this.init()
+          }
+          if (res.data.code === 402) {
+            alert('店铺删除失败')
+          }
+          if (res.data.code === 444) {
+            alert('未登录')
+            this.$router.push('/')
+          }
+        }).catch(error => {
+          console.log('失败')
+          console.log(error)
+        })
+      }).catch()
+    },
+    handlecheck (index, rows) {
+      localStorage.setItem('address', this.tableData1[index].address)
+      this.$router.push('/Probelist')
     }
   }
 }
 </script>
 <style>
-  .device-head{
-    text-align: center;
-    line-height: 60px;
-  }
-  .device-table{
-    text-align: center;
-    line-height: 60px;
-    width: 100%;
-  }
 </style>
