@@ -1,19 +1,21 @@
 <template>
-  <el-table :data="list"
+  <div>
+    <el-table :data="list"
             v-loading="listLoading" border>
     <el-table-column label="店主名字" align="center">
       <template slot-scope="scope">{{scope.row.username}}</template>
     </el-table-column>
-    <el-table-column label="操作" align="center">
+    <el-table-column label="商店" align="center">
       <template slot-scope="scope">
         <el-button size="mini"
-                   type="text"
+                   type="success"
                    @click="handlecheck(scope.$index, scope.row)">
           查看
         </el-button>
       </template>
     </el-table-column>
   </el-table>
+  </div>
 </template>
 <script>
 export default {

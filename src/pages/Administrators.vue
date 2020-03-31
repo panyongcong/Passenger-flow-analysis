@@ -10,7 +10,7 @@ export default {
   name: 'Administrators',
   data () {
     return {
-      center: {lng: 121.833138, lat: 39.081725},
+      center: {lng: '', lat: ''},
       zoom: 12,
       mapVisible: false,
       boss: []
@@ -24,7 +24,6 @@ export default {
       let _this = this // 设置一个临时变量指向vue实例，因为在百度地图回调里使用this，指向的不是vue实例；
       var geolocation = new BMap.Geolocation()
       geolocation.getCurrentPosition(function (r) {
-        _this.center = {lng: r.longitude, lat: r.latitude} // 设置center属性值
         _this.autoLocationPoint = {lng: r.longitude, lat: r.latitude} // 自定义覆盖物
         _this.initLocation = true
       }, {enableHighAccuracy: true})
@@ -40,7 +39,6 @@ export default {
         for (let i = 0; i < res.data.data.length; i++) {
           _this.boss.push(res.data.data[i].username)
         }
-        console.log(_this.boss)
         _this.getaddree()
       }).catch(error => {
         console.log('获取信息失败')
@@ -50,7 +48,6 @@ export default {
     },
     getaddree () {
       for (let i = 0; i < this.boss.length; i++) {
-        console.log(this.boss)
         this.$axios.get('http://47.112.255.207:8081/findShopByBName', {
           Headers: {
             'Authorization': ' '
@@ -61,6 +58,7 @@ export default {
           crossDomain: true
         }).then(res => {
           if (res.data.code === 200) {
+            console.log(res.data.data)
             for (let i = 0; i < res.data.data.length; i++) {
               let lng = res.data.data[i].longitude
               let lat = res.data.data[i].latitude
@@ -75,6 +73,8 @@ export default {
                 this.addMouseout(myMarker, address, name, point)
               })
             }
+            this.center.lat = res.data.data[0].latitude
+            this.center.lng = res.data.data[0].longitude
           }
           if (res.data.code === 401) {
             alert('返回店铺失败')
@@ -91,8 +91,8 @@ export default {
     },
     addMouseover (myMarker, address, name, point) {
       let opts = {
-        width: 50,
-        height: 50,
+        width: 100,
+        height: 80,
         title: '店铺信息'
       }
       let context = ''
@@ -115,6 +115,7 @@ export default {
           console.log(err)
         })
         let shopadd = '<table>'
+        shopadd = shopadd + '<tr><td> 店铺地址：' + address + '</td></tr>'
         shopadd = shopadd + '<tr><td> 店内人数：' + context + '</td></tr>'
         shopadd = shopadd + '<tr><td> 店主名字：' + name + '</td></tr>'
         shopadd += '</table>'
@@ -125,13 +126,13 @@ export default {
     addMouseout (myMarker, address, name, point) {
       let context = ''
       let opts = {
-        width: 50,
-        height: 50,
-        title: '当前店内人数'
+        width: 100,
+        height: 80,
+        title: '店铺信息'
       }
       myMarker.addEventListener('mouseout', e => {
-        console.log('1')
         let shopadd = '<table>'
+        shopadd = shopadd + '<tr><td> 店铺地址：' + address + '</td></tr>'
         shopadd = shopadd + '<tr><td> 店内人数：' + context + '</td></tr>'
         shopadd = shopadd + '<tr><td> 店主名字：' + name + '</td></tr>'
         shopadd += '</table>'
@@ -145,7 +146,6 @@ export default {
 
 <style>
   .allmap{
-    margin-top: 50px;
     width: 100%;
     height: 100%;
   }

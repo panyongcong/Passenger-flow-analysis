@@ -5,6 +5,7 @@
         <el-menu
           router
           class="el-menu-vertical-demo"
+          default-active="/system"
           background-color="#2F4050"
           text-color="#bfcbd9"
           active-text-color="#409EFF"

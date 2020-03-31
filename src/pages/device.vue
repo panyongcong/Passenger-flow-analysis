@@ -1,24 +1,27 @@
 <template>
-  <el-table :data="tableData"
+  <div>
+    <el-button type="primary" icon="el-icon-back" style="background-color: white;color: black;border: 1px solid #263A4A;margin: 10px" @click="back">退后</el-button>
+    <el-table :data="tableData"
             v-loading="listLoading" border>
     <el-table-column label="店铺名字" align="center">
       <template slot-scope="scope">{{scope.row.address}}</template>
     </el-table-column>
-    <el-table-column label="操作" align="center">
+    <el-table-column label="设备 | 操作" align="center">
       <template slot-scope="scope">
         <el-button size="mini"
-                   type="text"
+                   type="success"
                    @click="handlecheck(scope.$index, scope.row)">
           查看
         </el-button>
         <el-button size="mini"
-                   type="text"
+                   type="danger"
                    @click="handleDelete(scope.$index, scope.row)">
           删除
         </el-button>
       </template>
     </el-table-column>
   </el-table>
+  </div>
 </template>
 <script>
 import { MessageBox } from 'element-ui'
@@ -99,6 +102,9 @@ export default {
     handlecheck (index, rows) {
       localStorage.setItem('address', this.tableData1[index].address)
       this.$router.push('/Probelist')
+    },
+    back () {
+      this.$router.push('/profile')
     }
   }
 }

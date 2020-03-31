@@ -2,9 +2,8 @@
   <div class="app-container">
     <div class="address-layout">
       <div class="layout-head">
-        <div class="empty">
-        </div>
-        <div class="shopaddress">
+        <div style="float: left;font-size: 20px;margin-top: 10px;margin-right: 10px;margin-left: 10px">店铺地址:</div>
+        <div class="shopaddress" style="float: left;">
           <el-select v-model="shopaddress" style="width: 250px" @change="changeaddress">
             <el-option v-for="(item, index) in addressdata"
                        :key="index"
@@ -12,15 +11,10 @@
                        :label="item.label"></el-option>
           </el-select>
         </div>
-        <div class="empty">
-        </div>
-        <div class="empty">
-        </div>
-        <div class="empty">
-        </div>
-        <div class="shoptime">
+        <div class="shoptime" style="float: right">
+          <div style="float: left;font-size: 20px;margin-top: 10px;margin-right: 10px">日期:</div>
           <el-date-picker
-            style="float: right;z-index: 1"
+            style="z-index: 1;margin-right: 30px"
             @change="changeday3"
             v-model="value3"
             align="right"
@@ -31,58 +25,57 @@
           </el-date-picker>
         </div>
       </div>
-      <el-row :gutter="20">
-        <el-col :span="6">
+      <el-row :gutter="20" style="width: 100%;float: left;margin-top: 10px">
+        <el-col :span="3" style="width: 200px;margin-left: 30px">
           <div class="out-border">
-            <div class="layout-title">人流量</div>
+            <div class="layout-title" style="text-align: center;font-size: 18px">人流量</div>
             <div class="color-main address-content">
-              <div>{{walkerNumber}}</div>
+              <div style="text-align: center;">{{walkerNumber}}</div>
             </div>
           </div>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="3" style="width: 200px;margin-left: 30px">
           <div class="out-border">
-            <div class="layout-title">客流量</div>
+            <div class="layout-title" style="text-align: center;font-size: 18px">客流量</div>
             <div class="color-main address-content">
-              <div>{{consumerNumber}}</div>
+              <div style="text-align: center;">{{consumerNumber}}</div>
             </div>
           </div>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="3" style="width: 200px;margin-left: 30px">
           <div class="out-border">
-            <div class="layout-title">跳出量</div>
+            <div class="layout-title" style="text-align: center;font-size: 18px">跳出量</div>
             <div class="color-main address-content">
-              <div>{{jmpOut}}</div>
+              <div style="text-align: center;">{{jmpOut}}</div>
             </div>
           </div>
         </el-col>
-      </el-row>
-      <el-row :gutter="20" style="padding-top: 20px">
-        <el-col :span="6">
+        <el-col :span="3" style="width: 200px;margin-left: 30px">
           <div class="out-border">
-            <div class="layout-title">新顾客</div>
+            <div class="layout-title" style="text-align: center;font-size: 18px">新顾客</div>
             <div class="color-main address-content">
-              <div>{{newConsumer}}</div>
+              <div style="text-align: center;">{{newConsumer}}</div>
             </div>
           </div>
         </el-col>
-        <el-col :span="6">
+        <el-col :span="3" style="width: 200px;margin-left: 30px">
           <div class="out-border">
-            <div class="layout-title">当前店内顾客</div>
+            <div class="layout-title" style="text-align: center;font-size: 18px">当前店内顾客</div>
             <div class="color-main address-content">
-              <div>{{dynamicConsumer}}</div>
+              <div style="text-align: center;">{{dynamicConsumer}}</div>
             </div>
           </div>
         </el-col>
       </el-row>
     </div>
     <div class="statistics-layout">
-      <div class="layout-title">小时客流量统计</div>
+      <div class="layout-title" style="background-color: white;margin-right: 30px;text-align: center">小时客流量统计</div>
       <el-row>
         <el-col :span="20">
-          <div style="padding: 10px;border-left:1px solid #DCDFE6; width: 100%;">
+          <div style="padding: 10px;width: 100%;">
+            <div style="float: left;margin-top: 11px;font-weight: bold;margin-left: 40px;font-size: 20px">日期：</div>
             <el-date-picker
-              style="float: right;z-index: 1"
+              style="z-index: 1;width: 50%;"
               @change="changeday"
               v-model="value"
               align="right"
@@ -91,8 +84,11 @@
               value-format="yyyy-MM-dd"
               :picker-options="pickerOptions">
             </el-date-picker>
-            <div>
+            <div style="width: 100%;">
               <ve-line
+                :legend-visible="false"
+                width="550px"
+                height="360px"
                 :data="chartData"
                 :settings="chartSettings"
                 :grid="grid">
@@ -103,12 +99,13 @@
       </el-row>
     </div>
     <div class="statistics-layout">
-      <div class="layout-title">小时进店量统计</div>
+      <div class="layout-title" style="background-color: white;text-align: center">小时进店量统计</div>
       <el-row>
         <el-col :span="20">
-          <div style="padding: 10px;border-left:1px solid #DCDFE6; width: 100%;">
+          <div style="padding: 10px;width: 100%;">
+            <div style="float: left;margin-top: 11px;font-weight: bold;margin-left: 40px;font-size: 20px">日期：</div>
             <el-date-picker
-              style="float: right;z-index: 1"
+              style="z-index: 1;margin-left: 5px;float: left"
               @change="changeday1"
               v-model="value2"
               align="right"
@@ -117,8 +114,11 @@
               value-format="yyyy-MM-dd"
               :picker-options="pickerOptions1">
             </el-date-picker>
-            <div>
+            <div style="width: 100%;float: right;padding: 0">
               <ve-line
+                :legend-visible="false"
+                width="550px"
+                height="360px"
                 :data="chartData1"
                 :settings="chartSettings1"
                 :grid="grid">
@@ -319,6 +319,7 @@ export default {
         },
         crossDomain: true
       }).then(res => {
+        console.log(res.data.code)
         if (res.data.code === 200) {
           for (let i = 0; i < res.data.data.length; i++) {
             let add = {}
@@ -463,9 +464,7 @@ export default {
 </script>
 <style>
   .app-container {
-    margin-top: 40px;
-    margin-left: 120px;
-    margin-right: 120px;
+    margin-top: 10px;
   }
   .address-layout {
   }
@@ -474,14 +473,16 @@ export default {
     padding: 15px 20px;
     background: #F2F6FC;
     font-weight: bold;
+    border-radius:15px 15px 0 0;
   }
   .out-border {
     border: 1px solid #DCDFE6;
+    border-radius:15px
   }
 
   .statistics-layout {
-    margin-top: 20px;
-    border: 1px solid #DCDFE6;
+    float: left;
+    width: 50%;
   }
   .address-content{
     padding: 20px;

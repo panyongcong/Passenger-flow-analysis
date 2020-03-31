@@ -1,8 +1,12 @@
 <template>
   <div class="login">
     <div class="login-con">
+      <div style="float: left;margin-top:5px;margin-left: 140px;margin-right: 5px">
+        <img src="../assets/images/an.png">
+      </div>
+      <div style="float: left;color: white;margin-top: 10px;font-size: 20px;text-align: center;">人流量分析系统</div>
       <el-form
-        style="margin-top: 40px;width: 100%"
+        style="margin-top: 40px;width: 100%;margin-top: 50px"
         :model="loginForm"
         status-icon
         :rules="ruls"
@@ -63,6 +67,22 @@ export default {
   methods: {
     ...mapMutations(['changeLogin']),
     init () {
+      this.$axios.get('http://47.112.255.207:8081/logout', {
+        Headers: {
+          'Authorization': ' '
+        },
+        crossDomain: true
+      }).then(res => {
+        if (res.data.code === 200) {
+          this.$router.push('/')
+        }
+        if (res.data.code === 401) {
+          alert('退出失败')
+        }
+      }).catch(error => {
+        console.log(error)
+      })
+      localStorage.removeItem('Authorization')
       this.$store.commit('addshopflag', {shopflag: false})
     },
     login () {

@@ -1,5 +1,8 @@
 <template>
   <div class="register">
+    <div>
+      <el-button type="primary" icon="el-icon-back" style="background-color: white;color: black;border: 0px solid #263A4A;margin: 10px" @click="backup">返回</el-button>
+    </div>
     <div class="register-con">
       <el-form
         style="margin-top: 20px"
@@ -92,6 +95,9 @@ export default {
     }
   },
   methods: {
+    backup () {
+      this.$router.push('/')
+    },
     submitForm (formName) {
       let _this = this
       console.log(_this.ruleForm)

@@ -32,7 +32,7 @@ export default {
   name: 'shopinfo',
   data () {
     return {
-      center: {lng: '', lat: ''},
+      center: {lng: 0, lat: 0},
       zoom: 12,
       mapVisible: false,
       locData: {
@@ -55,9 +55,6 @@ export default {
       havashop: true // 判断是否有新店铺
     }
   },
-  mounted () {
-    this.init()
-  },
   methods: {
     handler ({BMap, map}) {
       let _this = this // 设置一个临时变量指向vue实例，因为在百度地图回调里使用this，指向的不是vue实例；
@@ -71,6 +68,7 @@ export default {
       }, {enableHighAccuracy: true})
       window.map = map
       this.getshop()
+      this.init()
     },
     init () {
       this.$axios.get('http://47.112.255.207:8081/findShop', {
@@ -162,8 +160,12 @@ export default {
               },
               crossDomain: true
             }).then(res => {
+              console.log(res.data.code)
               if (res.data.code === 200) {
                 window.map.addOverlay(myMarker)
+                this.addClickHandler(myMarker, _this.locData.address)
+                this.addMouseover(myMarker, _this.locData.address, point)
+                this.addMouseout(myMarker, _this.locData.address, point)
               }
               if (res.data.code === 401) {
                 alert('此处店铺已被添加,请不要重复添加')
@@ -175,7 +177,7 @@ export default {
                 alert('未登录')
                 this.$router.push('/')
               }
-            }).then(error => {
+            }).catch(error => {
               console.log('登录失败')
               console.log(error)
             })
@@ -260,9 +262,9 @@ export default {
     },
     addMouseover (myMarker, address, point) {
       let opts = {
-        width: 50,
-        height: 50,
-        title: '当前店内人数'
+        width: 100,
+        height: 80,
+        title: '店铺信息'
       }
       let context = ''
       myMarker.addEventListener('mouseover', e => {
@@ -284,6 +286,7 @@ export default {
           console.log(err)
         })
         let shopadd = '<table>'
+        shopadd = shopadd + '<tr><td> 店铺地址：' + address + '</td></tr>'
         shopadd = shopadd + '<tr><td> 店内人数：' + context + '</td></tr>'
         shopadd += '</table>'
         let infoWindow = new BMap.InfoWindow(shopadd, opts)
@@ -293,13 +296,13 @@ export default {
     addMouseout (myMarker, address, point) {
       let context = ''
       let opts = {
-        width: 50,
-        height: 50,
-        title: '当前店内人数'
+        width: 100,
+        height: 200,
+        title: '店铺信息'
       }
       myMarker.addEventListener('mouseout', e => {
-        console.log('1')
         let shopadd = '<table>'
+        shopadd = shopadd + '<tr><td> 店铺地址：' + address + '</td></tr>'
         shopadd = shopadd + '<tr><td> 店内人数：' + context + '</td></tr>'
         shopadd += '</table>'
         let infoWindow = new BMap.InfoWindow(shopadd, opts)
@@ -307,6 +310,7 @@ export default {
       })
     },
     checkshop () {
+      console.log(this.clickedshopaddress)
       localStorage.setItem('address', this.clickedshopaddress)
       this.$router.push('/system')
     }

@@ -26,12 +26,12 @@
         <el-table-column label="操作" width="180" align="center">
           <template slot-scope="scope">
             <el-button size="mini"
-                       type="text"
+                       type="success"
                        @click="handleUpdate(scope.$index, scope.row)">
               编辑
             </el-button>
             <el-button size="mini"
-                       type="text"
+                       type="danger"
                        @click="handleDelete(scope.$index, scope.row)">
               删除
             </el-button>

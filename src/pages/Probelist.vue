@@ -1,6 +1,7 @@
 <template>
   <div>
-    <el-button type="primary" round @click="btn2" style="margin-bottom: 30px;float: left;margin-top: 30px;margin-left: 30px">刷新</el-button>
+    <el-button type="primary" icon="el-icon-back" style="background-color: white;color: black;border: 1px solid #263A4A;margin: 10px" @click="backup">退后</el-button>
+    <el-button type="primary"  @click="btn2" style="margin: 10px;float: right;background-color: white;color: black;border: 1px solid #263A4A;">刷新</el-button>
     <div class="table-container">
       <el-table ref="flashTable"
                 :data="list"
@@ -25,12 +26,12 @@
         <el-table-column label="操作" width="180" align="center">
           <template slot-scope="scope">
             <el-button size="mini"
-                       type="text"
+                       type="success"
                        @click="handleUpdate(scope.$index, scope.row)">
               编辑
             </el-button>
             <el-button size="mini"
-                       type="text"
+                       type="danger"
                        @click="handleDelete(scope.$index, scope.row)">
               删除
             </el-button>
@@ -152,6 +153,9 @@ export default {
     },
     btn2 () {
       this.init()
+    },
+    backup () {
+      this.$router.push('/device')
     },
     init () {
       this.list = []

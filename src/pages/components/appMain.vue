@@ -7,16 +7,7 @@
 <script>
 export default {
   name: 'appMain',
-  components: {},
-  data () {
-    return {}
-  },
-  computed: {},
-  methods: {},
-  created () {
-  },
-  mounted () {
-  }
+  components: {}
 }
 </script>
 
