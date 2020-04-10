@@ -57,6 +57,51 @@ const router = new Router({
           path: '/Probelist',
           name: 'Probelist',
           component: () => import('@/pages/Probelist')
+        },
+        {
+          path: '/Jurisdiction',
+          name: 'Jurisdiction',
+          component: () => import('@/pages/Jurisdiction')
+        },
+        {
+          path: '/Management',
+          name: 'Management',
+          component: () => import('@/pages/Management')
+        },
+        {
+          path: '/Approval',
+          name: 'Approval',
+          component: () => import('@/pages/Approval')
+        },
+        {
+          path: '/Notice',
+          name: 'Notice',
+          component: () => import('@/pages/Notice')
+        },
+        {
+          path: '/information',
+          name: 'information',
+          component: () => import('@/pages/information')
+        },
+        {
+          path: '/informationadmin',
+          name: 'informationadmin',
+          component: () => import('@/pages/informationadmin')
+        },
+        {
+          path: '/Privilege',
+          name: 'Privilege',
+          component: () => import('@/pages/Privilege')
+        },
+        {
+          path: '/Noauthority',
+          name: 'Noauthority',
+          component: () => import('@/pages/Noauthority')
+        },
+        {
+          path: '/Administratorinf',
+          name: 'Administratorinf',
+          component: () => import('@/pages/Administratorinf')
         }
       ]
     },

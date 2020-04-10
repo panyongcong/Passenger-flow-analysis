@@ -1,6 +1,8 @@
 <template>
-  <div>
+  <div v-if="showpage">
     <el-button type="primary" round @click="btn" style="margin-bottom: 30px;float: right;margin-top: 30px;margin-right: 30px">添加探针</el-button>
+    <el-button type="primary" round @click="btnquery" style="margin-bottom: 30px;float: right;margin-top: 30px;margin-right: 30px">查询探针</el-button>
+    <el-input v-model="flashPromotion_query.machineId" style="width: 250px;float: right;margin-top: 30px;" :placeholder=placeholder @focus="blurSearchFor()" @blur="blurSear" v-if="showinput"></el-input>
     <el-button type="primary" round @click="btn2" style="margin-bottom: 30px;float: left;margin-top: 30px;margin-left: 30px">刷新</el-button>
     <div class="table-container">
       <el-table ref="flashTable"
@@ -8,7 +10,7 @@
                 style="width: 100%;"
                 v-loading="listLoading" border>
         <el-table-column type="selection" width="60" align="center"></el-table-column>
-        <el-table-column label="编号" width="100" align="center">
+        <el-table-column label="设备ID" width="100" align="center">
           <template slot-scope="scope">{{scope.row.machineId}}</template>
         </el-table-column>
         <el-table-column label="探针地址" align="center">
@@ -92,21 +94,29 @@ export default {
     return {
       list: [],
       list1: [],
+      showinput: true,
+      showpage: false,
       listLoading: false,
       dialogVisible: false,
       dialogVisible_edit: false,
+      dialogVisible_query: false,
       flashPromotion: {
         address: '',
         machineId: '',
         rssi: '-50',
-        leastRssi: '-100'
+        leastRssi: '-100',
+        username: ''
       },
       flashPromotion_edit: {
         machineId: '',
         rssi: '',
         leastRssi: ''
       },
-      flag: false
+      flashPromotion_query: {
+        machineId: ''
+      },
+      flag: false,
+      placeholder: '根据设备id查询设备,支持模糊查找'
     }
   },
   mounted () {
@@ -125,6 +135,9 @@ export default {
         if (res.data.code === 444) {
           alert('未登录')
           this.$router.push('/')
+        }
+        if (res.data.code === 443) {
+          alert('无权限操作')
         }
       }).catch(error => {
         console.log('失败')
@@ -170,6 +183,12 @@ export default {
           alert('未登录')
           this.$router.push('/')
         }
+        if (res.data.code === 443) {
+          this.dialogVisible_edit = false
+          alert('无权限操作')
+        }
+      }).catch(err => {
+        console.log(err)
       })
     },
     btn () {
@@ -180,8 +199,9 @@ export default {
     },
     init () {
       this.list = []
+      this.showinput = true
       let shopaddress = localStorage.getItem('address')
-      let user = localStorage.getItem('name')
+      let user = this.$store.state.bossname
       this.$axios.get('http://47.112.255.207:8081/findMachineByAddress', {
         Headers: {
           'Authorization': ' '
@@ -192,13 +212,18 @@ export default {
         },
         crossDomain: true
       }).then(res => {
-        if (res.data.data.length !== 0) {
-          this.flag = true
+        if (res.data.code === 200) {
+          this.showpage = true
+          if (res.data.data.length !== 0) {
+            this.flag = true
+          }
+          this.list = res.data.data
+          this.list1 = res.data.data
         }
-        console.log(res.data.data)
-        console.log(shopaddress)
-        this.list = res.data.data
-        this.list1 = res.data.data
+        if (res.data.code === 443) {
+          this.showpage = false
+          this.$router.push('/Noauthority')
+        }
         if (res.data.code === 444) {
           alert('未登录')
           this.$router.push('/')
@@ -222,6 +247,7 @@ export default {
       } else {
         console.log(this.flashPromotion)
         this.flashPromotion.address = localStorage.getItem('address')
+        this.flashPromotion.username = this.$store.state.bossname
         let flashPromotion = this.$qs.stringify(this.flashPromotion)
         this.$axios({
           method: 'post',
@@ -253,8 +279,40 @@ export default {
             alert('未登录')
             this.$router.push('/')
           }
+          if (res.data.code === 443) {
+            alert('无权限操作')
+          }
         })
       }
+    },
+    btnquery () {
+      this.$axios.get('http://47.112.255.207:8081/searchMachineByMachineId', {
+        Headers: {
+          'Authorization': ' '
+        },
+        params: {
+          machineId: this.flashPromotion_query.machineId
+        },
+        crossDomain: true
+      }).then(res => {
+        this.dialogVisible_query = false
+        if (res.data.code === 200) {
+          this.showinput = false
+          this.flashPromotion_query.machineId = ''
+          this.list = res.data.data
+          this.list1 = res.data.data
+        }
+      }).catch(err => {
+        console.log(err)
+      })
+    },
+    blurSearchFor () {
+      if (this.placeholder === '根据设备id查询设备,支持模糊查找') {
+        this.placeholder = ''
+      }
+    },
+    blurSear () {
+      this.placeholder = '根据设备id查询设备,支持模糊查找'
     }
   }
 }

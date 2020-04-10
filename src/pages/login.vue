@@ -1,23 +1,25 @@
 <template>
   <div class="login">
+    <div style="float: left;margin-top:40px;margin-left: 570px;margin-right: 28px;">
+      <img src="../assets/images/an2.png">
+    </div>
+    <div style="float: left;color: white;margin-top: 40px;font-size: 45px;text-align: center;margin-bottom: 150px">人流量分析系统</div>
     <div class="login-con">
-      <div style="float: left;margin-top:5px;margin-left: 140px;margin-right: 5px">
-        <img src="../assets/images/an.png">
-      </div>
-      <div style="float: left;color: white;margin-top: 10px;font-size: 20px;text-align: center;">人流量分析系统</div>
       <el-form
-        style="margin-top: 40px;width: 100%;margin-top: 50px"
+        style="width: 100%;margin-top: 50px"
         :model="loginForm"
         status-icon
         :rules="ruls"
         ref="loginForm"
         label-width="100px"
-        class="demo-ruleForm">
-        <el-form-item label="用户名" prop="username">
-          <el-input v-model.number="loginForm.username" style="width: 100%"></el-input>
+        class="demo-ruleForm"
+        autocomplete="on"
+        @submit.native.prevent>
+        <el-form-item label="用户名" prop="username" class="demo">
+          <el-input v-model="loginForm.username" autocomplete="off" style="width: 100%"></el-input>
         </el-form-item>
-        <el-form-item label="密码" prop="password">
-          <el-input type="password" v-model="loginForm.password" autocomplete="off" style="width: 100%"></el-input>
+        <el-form-item label="密码" prop="password" class="demo">
+          <el-input type="password" v-model="loginForm.password" autocomplete="off" style="width: 100%" @keyup.enter.native="login"></el-input>
         </el-form-item>
         <el-form-item style="width: 100%">
           <el-button type="primary" @click="login" style="width: 45%">登录</el-button>
@@ -41,7 +43,7 @@ export default {
     }
     var vapass = (rule, value, callback) => {
       if (!value) {
-        return callback(new Error('用户名不能为空'))
+        return callback(new Error('密码不能为空'))
       } else {
         callback()
       }
@@ -61,30 +63,11 @@ export default {
       flag: false
     }
   },
-  created () {
-    this.init()
+  destroyed () {
+    document.onkeydown = undefined
   },
   methods: {
     ...mapMutations(['changeLogin']),
-    init () {
-      this.$axios.get('http://47.112.255.207:8081/logout', {
-        Headers: {
-          'Authorization': ' '
-        },
-        crossDomain: true
-      }).then(res => {
-        if (res.data.code === 200) {
-          this.$router.push('/')
-        }
-        if (res.data.code === 401) {
-          alert('退出失败')
-        }
-      }).catch(error => {
-        console.log(error)
-      })
-      localStorage.removeItem('Authorization')
-      this.$store.commit('addshopflag', {shopflag: false})
-    },
     login () {
       if (this.loginForm.username === '' || this.loginForm.password === '') {
         alert('账号和密码不能为空')
@@ -114,11 +97,13 @@ export default {
             if (res.data.data.uid === '2') {
               let UserRole = 'boss'
               localStorage.setItem('userRole', UserRole)
+              this.$store.commit('addbossnamebystaff', {bossname: this.loginForm.username})
               _this.$router.push('/system')
             }
             if (res.data.data.uid === '3') {
               localStorage.setItem('address', res.data.data.address)
               let UserRole = 'staff'
+              this.$store.commit('addbossnamebystaff', {bossname: res.data.data.bossname})
               localStorage.setItem('userRole', UserRole)
               _this.$router.push('/system')
             }
@@ -145,15 +130,18 @@ export default {
     position:absolute;
     width: 100%;
     height: 100%;
-    background-image: url("../assets/images/beijing.jpg");
+    background-image: url("../assets/images/beijing2.jpg");
     background-repeat: no-repeat;
     background-size:100% 100%;
   }
   .login-con{
-    margin-top: 200px;
+    margin-top: 160px;
     width: 30%;
     height: 40%;
     margin-left: 33%;
     padding: 20px 20px;
+  }
+  .demo .el-form-item__label{
+    color: white;
   }
 </style>

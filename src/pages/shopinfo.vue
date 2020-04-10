@@ -1,5 +1,5 @@
 <template>
-  <div class="shopinfo-main" style="position: relative">
+  <div class="shopinfo-main" style="position: relative" v-if="showpage">
     <div class="allmap" style="position: fixed">
       <baidu-map :mapClick="false" :center="center" :zoom="zoom" @click="getClickInfo" @ready="handler" style="height:1080px" :scroll-wheel-zoom='true'>
       </baidu-map>
@@ -33,12 +33,14 @@ export default {
   data () {
     return {
       center: {lng: 0, lat: 0},
+      showpage: false,
       zoom: 12,
       mapVisible: false,
       locData: {
         longitude: '',
         latitude: '',
-        address: ''
+        address: '',
+        username: ''
       },
       flag: 0,
       dialogTableVisible: false,
@@ -54,6 +56,9 @@ export default {
       markerba: '',
       havashop: true // 判断是否有新店铺
     }
+  },
+  created () {
+    this.init()
   },
   methods: {
     handler ({BMap, map}) {
@@ -75,10 +80,14 @@ export default {
         Headers: {
           'Authorization': ' '
         },
+        params: {
+          username: this.$store.state.bossname
+        },
         crossDomain: true
       }).then(res => {
         console.log(res.data.code)
         if (res.data.code === 200) {
+          this.showpage = true
           this.havashop = true
           if (res.data.data.length !== 0) {
             this.center.lat = res.data.data[0].latitude
@@ -88,6 +97,10 @@ export default {
         if (res.data.code === 444) {
           alert('未登录')
           this.$router.push('/')
+        }
+        if (res.data.code === 443) {
+          this.showpage = false
+          this.$router.push('/Noauthority')
         }
         if (res.data.code === 402) {
           this.havashop = false
@@ -101,6 +114,9 @@ export default {
       this.$axios.get('http://47.112.255.207:8081/findShop', {
         Headers: {
           'Authorization': ' '
+        },
+        params: {
+          username: this.$store.state.bossname
         },
         crossDomain: true
       }).then(res => {
@@ -150,6 +166,7 @@ export default {
             type: 'warning'
           }).then(() => {
             _this.locData.address = _this.locData.address + '店'
+            _this.locData.username = this.$store.state.bossname
             let locData = _this.$qs.stringify(_this.locData)
             this.$axios({
               method: 'post',
@@ -245,6 +262,9 @@ export default {
               }
             }
             this.dialogTableVisible = false
+            if (this.clickedshopaddress === localStorage.getItem('address')) {
+              this.$store.commit('addshopflag', {shopflag: false})
+            }
             alert('删除成功')
           }
           if (res.data.code === 444) {

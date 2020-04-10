@@ -143,6 +143,21 @@
         <el-button type="primary" @click="chooceaddress">确 定</el-button>
       </span>
     </el-dialog>
+    <el-dialog
+      title="由于店铺被删除请重新选择"
+      :visible.sync="dialogVisiblebystaff"
+      width="30%">
+      <el-select v-model="shopaddress" style="width: 250px;margin-left: 50px">
+        <el-option v-for="(item, index) in addressdatabystaff"
+                   :key="index"
+                   :value="item.label"
+                   :label="item.label"></el-option>
+      </el-select>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisiblebystaff = false">取 消</el-button>
+        <el-button type="primary" @click="chooceaddressbystaff">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -151,6 +166,7 @@ export default {
   data () {
     return {
       dialogVisible: false,
+      dialogVisiblebystaff: false,
       value: '',
       value2: '',
       value3: '',
@@ -258,6 +274,7 @@ export default {
         }]},
       username: '',
       addressdata: [],
+      addressdatabystaff: [],
       flaghaveshop: false // 判断这人有没有店铺
     }
   },
@@ -271,13 +288,109 @@ export default {
         this.getData()
       }
       if (role === 'staff') {
-        this.shopaddress = localStorage.getItem('address')
-        this.gettoday()
-        let add = {}
-        add.value = 0
-        add.label = localStorage.getItem('address')
-        this.addressdata.push(add)
+        this.checkShop()
       }
+    },
+    checkJurisdiction () {
+      this.$axios.get('http://47.112.255.207:8081/findShop', {
+        Headers: {
+          'Authorization': ' '
+        },
+        params: {
+          username: this.$store.state.bossname
+        },
+        crossDomain: true
+      }).then(res => {
+        this.addressdata = []
+        if (res.data.code === 200) {
+          for (let i = 0; i < res.data.data.length; i++) {
+            let add = {}
+            add.value = i
+            add.label = res.data.data[i].address
+            this.addressdata.push(add)
+          }
+          this.shopaddress = this.addressdata[0].label
+        }
+        if (res.data.code === 443) {
+          let add = {}
+          add.value = 0
+          add.label = localStorage.getItem('address')
+          this.addressdata.push(add)
+          this.shopaddress = this.addressdata[0].label
+        }
+      })
+    },
+    checkShop () {
+      this.$axios.get('http://47.112.255.207:8081/checkShop', {
+        Headers: {
+          'Authorization': ' '
+        },
+        params: {
+          address: localStorage.getItem('address')
+        },
+        crossDomain: true
+      }).then(res => {
+        if (res.data.code === 200) {
+          this.shopaddress = localStorage.getItem('address')
+          this.gettoday()
+          this.checkJurisdiction()
+        }
+        if (res.data.code === 402) {
+          this.chooseaddressbystaff()
+        }
+      }).catch(error => {
+        console.log(error)
+      })
+    },
+    chooseaddressbystaff () {
+      this.$axios.get('http://47.112.255.207:8081/findShopByBNameOnlyStaff', {
+        Headers: {
+          'Authorization': ' '
+        },
+        params: {
+          username: this.$store.state.bossname
+        },
+        crossDomain: true
+      }).then(res => {
+        if (res.data.code === 200) {
+          for (let i = 0; i < res.data.data.length; i++) {
+            let add = {}
+            add.value = i
+            add.label = res.data.data[i].address
+            this.addressdatabystaff.push(add)
+          }
+        }
+        if (res.data.code === 444) {
+          alert('未登录')
+          this.$router.push('/')
+        }
+      }).catch(err => {
+        console.log(err)
+      })
+      this.dialogVisiblebystaff = true
+    },
+    chooceaddressbystaff () {
+      let addressstaff = {username: localStorage.getItem('name'), address: this.shopaddress}
+      addressstaff = this.$qs.stringify(addressstaff)
+      this.$axios({
+        method: 'post',
+        url: 'http://47.112.255.207:8081/changeBondShop',
+        data: addressstaff,
+        Headers: {
+          'Authorization': ' '
+        },
+        crossDomain: true
+      }).then(res => {
+        if (res.data.code === 200) {
+          console.log('成功')
+          localStorage.setItem('address', this.shopaddress)
+          this.gettoday()
+          this.checkJurisdiction()
+          this.dialogVisiblebystaff = false
+        }
+      }).catch(err => {
+        console.log(err)
+      })
     },
     chooceaddress () {
       this.$store.commit('addshopflag', {shopflag: true})
@@ -311,22 +424,18 @@ export default {
     },
     getData () {
       this.addressdata = []
-      this.$axios({
-        method: 'get',
-        url: 'http://47.112.255.207:8081/findShop',
+      this.$axios.get('http://47.112.255.207:8081/findShopByUsernameCheckPermission', {
         Headers: {
           'Authorization': ' '
+        },
+        params: {
+          username: this.$store.state.bossname
         },
         crossDomain: true
       }).then(res => {
         console.log(res.data.code)
         if (res.data.code === 200) {
-          for (let i = 0; i < res.data.data.length; i++) {
-            let add = {}
-            add.value = i
-            add.label = res.data.data[i].address
-            this.addressdata.push(add)
-          }
+          this.checkJurisdiction()
         }
         if (res.data.code === 444) {
           alert('未登录')

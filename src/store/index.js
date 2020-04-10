@@ -8,7 +8,9 @@ export default new Vuex.Store({
     rssi: '-50',
     leastRssi: '-100',
     shopname: '',
-    shopflag: false
+    shopflag: false,
+    bossname: '',
+    staffname: ''
   },
   mutations: {
     // 修改token，并将token存入localStorage
@@ -26,6 +28,12 @@ export default new Vuex.Store({
     },
     addshopflag (state, user) {
       state.shopflag = user.shopflag
+    },
+    addbossnamebystaff (state, user) {
+      state.bossname = user.bossname
+    },
+    addstaffname (state, user) {
+      state.staffname = user.staffname
     }
   }
 })

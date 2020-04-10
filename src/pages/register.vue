@@ -35,7 +35,8 @@
             <el-option v-for="(item, index) in shopaddress"
                        :key="index"
                        :value="item.label"
-                       :label="item.label"></el-option>
+                       :label="item.label">
+            </el-option>
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -100,19 +101,20 @@ export default {
     },
     submitForm (formName) {
       let _this = this
-      console.log(_this.ruleForm)
       let registerForm = {}
       if (_this.ruleForm.uid === '2') {
         registerForm.uid = _this.ruleForm.uid
         registerForm.username = _this.ruleForm.username
         registerForm.password = _this.ruleForm.password
         registerForm.address = ''
+        registerForm.bossname = ''
       }
       if (_this.ruleForm.uid === '3') {
         registerForm.uid = _this.ruleForm.uid
         registerForm.username = _this.ruleForm.username
         registerForm.password = _this.ruleForm.password
         registerForm.address = _this.ruleForm.address
+        registerForm.bossname = _this.ruleForm.Shopowner_name
       }
       registerForm = this.$qs.stringify(registerForm)
       this.$axios({
@@ -124,6 +126,7 @@ export default {
         },
         crossDomain: true
       }).then(res => {
+        console.log(res.data)
         if (res.data.code === 401) {
           alert('注册店员身份要查询店主的店铺,并且选择店铺进行绑定')
         }
@@ -132,6 +135,10 @@ export default {
         }
         if (res.data.code === 403) {
           alert('注册失败，请与管理员联系')
+        }
+        if (res.data.code === 201) {
+          this.$router.push('/')
+          alert('注册成功，请等待店主的审批')
         }
         if (res.data.code === 200) {
           this.$router.push('/')

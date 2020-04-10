@@ -1,14 +1,16 @@
 <template>
   <div>
     <el-button type="primary" icon="el-icon-back" style="background-color: white;color: black;border: 1px solid #263A4A;margin: 10px" @click="backup">退后</el-button>
-    <el-button type="primary"  @click="btn2" style="margin: 10px;float: right;background-color: white;color: black;border: 1px solid #263A4A;">刷新</el-button>
+    <el-button type="primary" round @click="btn2" style="margin-bottom: 30px;margin-top: 30px;margin-left: 30px">刷新</el-button>
+    <el-button type="primary" round @click="btnquery" style="margin-bottom: 30px;float: right;margin-top: 30px;margin-right: 30px">查询探针</el-button>
+    <el-input v-model="flashPromotion_query.machineId" style="width: 250px;float: right;margin-top: 30px;" :placeholder=placeholder @focus="blurSearchFor()" @blur="blurSear" v-if="showinput"></el-input>
     <div class="table-container">
       <el-table ref="flashTable"
                 :data="list"
                 style="width: 100%;"
                 v-loading="listLoading" border>
         <el-table-column type="selection" width="60" align="center"></el-table-column>
-        <el-table-column label="编号" width="100" align="center">
+        <el-table-column label="设备ID" width="100" align="center">
           <template slot-scope="scope">{{scope.row.machineId}}</template>
         </el-table-column>
         <el-table-column label="探针地址" align="center">
@@ -71,6 +73,7 @@ export default {
     return {
       list: [],
       list1: [],
+      showinput: true,
       listLoading: false,
       dialogVisible: false,
       dialogVisible_edit: false,
@@ -85,7 +88,11 @@ export default {
         rssi: '',
         leastRssi: ''
       },
-      flag: false
+      flashPromotion_query: {
+        machineId: ''
+      },
+      flag: false,
+      placeholder: '根据设备id查询设备,支持模糊查找'
     }
   },
   mounted () {
@@ -159,6 +166,7 @@ export default {
     },
     init () {
       this.list = []
+      this.showinput = true
       let shopaddress = localStorage.getItem('address')
       this.$axios.get('http://47.112.255.207:8081/findMachineByAddress', {
         Headers: {
@@ -173,8 +181,6 @@ export default {
         if (res.data.data.length !== 0) {
           this.flag = true
         }
-        console.log(res.data.data)
-        console.log(shopaddress)
         this.list = res.data.data
         this.list1 = res.data.data
         if (res.data.code === 444) {
@@ -185,6 +191,35 @@ export default {
         console.log('失败')
         console.log(error)
       })
+    },
+    btnquery () {
+      this.$axios.get('http://47.112.255.207:8081/searchMachineByMachineId', {
+        Headers: {
+          'Authorization': ' '
+        },
+        params: {
+          machineId: this.flashPromotion_query.machineId
+        },
+        crossDomain: true
+      }).then(res => {
+        this.dialogVisible_query = false
+        if (res.data.code === 200) {
+          this.showinput = false
+          this.flashPromotion_query.machineId = ''
+          this.list = res.data.data
+          this.list1 = res.data.data
+        }
+      }).catch(err => {
+        console.log(err)
+      })
+    },
+    blurSearchFor () {
+      if (this.placeholder === '根据设备id查询设备,支持模糊查找') {
+        this.placeholder = ''
+      }
+    },
+    blurSear () {
+      this.placeholder = '根据设备id查询设备,支持模糊查找'
     }
   }
 }
