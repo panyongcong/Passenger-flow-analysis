@@ -86,6 +86,7 @@ export default {
           _this.userToken = res.data.data.token
           _this.changeLogin({ Authorization: this.userToken })
           if (res.data.code === 200) {
+            this.$store.commit('addshopflag', {shopflag: false})
             localStorage.setItem('name', this.loginForm.username)
             _this.flag = true
             if (res.data.data.uid === '1') {

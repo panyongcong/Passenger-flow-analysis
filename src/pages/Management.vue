@@ -1,6 +1,16 @@
 <template>
   <div>
-    <el-button type="primary" icon="el-icon-back" circle @click="backup" style="background-color: white;color: black;border: 0"></el-button>
+    <div style="width: 45%;float: right;font-size: 20px;height: 34px">
+      <div style="margin-left: 180px;margin-top: 7px">
+        用户名：{{stafname}}
+      </div>
+    </div>
+    <div style="width: 45%;float: right;font-size: 20px;height: 34px;margin-top: 7px">
+      <div style="margin-left: 140px">
+        姓名：{{name}}
+      </div>
+    </div>
+    <el-button type="primary" icon="el-icon-back" circle @click="backup" style="background-color: white;color: black;border: 0;width: 10%;float: right"></el-button>
     <el-table :data="list"
               v-loading="listLoading" border>
       <el-table-column label="权限" align="center">
@@ -34,7 +44,9 @@ export default {
       rowsdata: {
         username: '',
         pid: ''
-      }
+      },
+      stafname: '',
+      name: ''
     }
   },
   mounted () {
@@ -44,7 +56,8 @@ export default {
     init () {
       let _this = this
       _this.list = []
-      console.log(this.$store.state.staffname)
+      this.stafname = this.$store.state.staffname
+      this.name = this.$store.state.name
       this.$axios.get('http://47.112.255.207:8081/searchPermission', {
         Headers: {
           'Authorization': ' '

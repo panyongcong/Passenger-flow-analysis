@@ -116,25 +116,29 @@ export default {
       this.$router.push('/profile')
     },
     btnquery () {
-      this.$axios.get('http://47.112.255.207:8081/searchShopByAddress', {
-        Headers: {
-          'Authorization': ' '
-        },
-        params: {
-          address: this.flashPromotion_query.address
-        },
-        crossDomain: true
-      }).then(res => {
-        if (res.data.code === 200) {
-          this.showinput = false
-          this.flashPromotion_query.address = ''
-          console.log(res.data.data)
-          this.tableData = res.data.data
-          this.tableData1 = res.data.data
-        }
-      }).catch(err => {
-        console.log(err)
-      })
+      if (this.flashPromotion_query.address === '') {
+      } else {
+        this.$axios.get('http://47.112.255.207:8081/searchShopByAddress', {
+          Headers: {
+            'Authorization': ' '
+          },
+          params: {
+            username: this.$store.state.shopname,
+            address: this.flashPromotion_query.address
+          },
+          crossDomain: true
+        }).then(res => {
+          if (res.data.code === 200) {
+            this.showinput = false
+            this.flashPromotion_query.address = ''
+            console.log(res.data.data)
+            this.tableData = res.data.data
+            this.tableData1 = res.data.data
+          }
+        }).catch(err => {
+          console.log(err)
+        })
+      }
     },
     blurSearchFor () {
       if (this.placeholder === '根据设备id查询设备,支持模糊查找') {

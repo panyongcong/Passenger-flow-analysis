@@ -24,6 +24,17 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+    <el-dialog
+      title="请输入店铺地址"
+      :visible.sync="dialogVisibleadd"
+      width="30%">
+      <span>店铺地址：</span>
+      <el-input  v-model="locData.address" autocomplete="off" style="width: 250px"></el-input>
+      <span slot="footer" class="dialog-footer">
+    <el-button @click="dialogVisibleadd = false">取 消</el-button>
+    <el-button type="primary" @click="add">确 定</el-button>
+  </span>
+    </el-dialog>
   </div>
 </template>
 <script>
@@ -35,6 +46,7 @@ export default {
       center: {lng: 0, lat: 0},
       showpage: false,
       zoom: 12,
+      dialogVisibleadd: false,
       mapVisible: false,
       locData: {
         longitude: '',
@@ -54,6 +66,7 @@ export default {
       clickedshopaddress: '',
       showaddress: '',
       markerba: '',
+      flag2: 0,
       havashop: true // 判断是否有新店铺
     }
   },
@@ -73,7 +86,6 @@ export default {
       }, {enableHighAccuracy: true})
       window.map = map
       this.getshop()
-      this.init()
     },
     init () {
       this.$axios.get('http://47.112.255.207:8081/findShop', {
@@ -104,6 +116,7 @@ export default {
         }
         if (res.data.code === 402) {
           this.havashop = false
+          this.showpage = true
         }
       }).catch(error => {
         console.log('失败')
@@ -151,55 +164,16 @@ export default {
     getClickInfo (e) {
       if (this.flag === 1) {
         let _this = this
+        _this.dialogVisibleadd = true
         var myMarker = new BMap.Marker(new BMap.Point(e.point.lng, e.point.lat))
+        window.myMarker = myMarker
         var gc = new BMap.Geocoder()
         var point = new BMap.Point(e.point.lng, e.point.lat)
-        gc.getLocation(point, res => {
+        window.point = point
+        gc.getLocation(window.point, res => {
+          _this.locData.longitude = window.point.lng
+          _this.locData.latitude = window.point.lat
           _this.locData.address = res.address
-          _this.locData.longitude = point.lng
-          _this.locData.latitude = point.lat
-          var mes = '确定要在:' + '经度:' + _this.locData.longitude + +'  ' + '维度:' + _this.locData.latitude + '  ' + _this.locData.address + '添加店铺吗？'
-          MessageBox.confirm(mes, '提示', {
-            showCancelButton: true,
-            confirmButtonText: '确定',
-            cancelButtonClass: '取消',
-            type: 'warning'
-          }).then(() => {
-            _this.locData.address = _this.locData.address + '店'
-            _this.locData.username = this.$store.state.bossname
-            let locData = _this.$qs.stringify(_this.locData)
-            this.$axios({
-              method: 'post',
-              url: 'http://47.112.255.207:8081/insertShop',
-              data: locData,
-              Headers: {
-                'Authorization': ' '
-              },
-              crossDomain: true
-            }).then(res => {
-              console.log(res.data.code)
-              if (res.data.code === 200) {
-                window.map.addOverlay(myMarker)
-                this.addClickHandler(myMarker, _this.locData.address)
-                this.addMouseover(myMarker, _this.locData.address, point)
-                this.addMouseout(myMarker, _this.locData.address, point)
-              }
-              if (res.data.code === 401) {
-                alert('此处店铺已被添加,请不要重复添加')
-              }
-              if (res.data.code === 402) {
-                alert('添加店铺异常')
-              }
-              if (res.data.code === 444) {
-                alert('未登录')
-                this.$router.push('/')
-              }
-            }).catch(error => {
-              console.log('登录失败')
-              console.log(error)
-            })
-          }).catch(() => {
-          })
         })
         _this.locData.longitude = e.point.lng
         _this.locData.latitude = e.point.lat
@@ -333,6 +307,53 @@ export default {
       console.log(this.clickedshopaddress)
       localStorage.setItem('address', this.clickedshopaddress)
       this.$router.push('/system')
+    },
+    add () {
+      this.dialogVisibleadd = false
+      let _this = this
+      var mes = '确定要在:' + '经度:' + _this.locData.longitude + +'  ' + '维度:' + _this.locData.latitude + '  ' + _this.locData.address + '添加店铺吗？'
+      MessageBox.confirm(mes, '提示', {
+        showCancelButton: true,
+        confirmButtonText: '确定',
+        cancelButtonClass: '取消',
+        type: 'warning'
+      }).then(() => {
+        _this.locData.address = _this.locData.address + '店'
+        _this.locData.username = this.$store.state.bossname
+        let locData = _this.$qs.stringify(_this.locData)
+        this.$axios({
+          method: 'post',
+          url: 'http://47.112.255.207:8081/insertShop',
+          data: locData,
+          Headers: {
+            'Authorization': ' '
+          },
+          crossDomain: true
+        }).then(res => {
+          console.log(res.data.code)
+          if (res.data.code === 200) {
+            window.map.addOverlay(window.myMarker)
+            this.addClickHandler(window.myMarker, _this.locData.address)
+            this.addMouseover(window.myMarker, _this.locData.address, window.point)
+            this.addMouseout(window.myMarker, _this.locData.address, window.point)
+            _this.locData.address = ''
+          }
+          if (res.data.code === 401) {
+            alert('此处店铺已被添加,请不要重复添加')
+          }
+          if (res.data.code === 402) {
+            alert('添加店铺异常')
+          }
+          if (res.data.code === 444) {
+            alert('未登录')
+            this.$router.push('/')
+          }
+        }).catch(error => {
+          console.log('登录失败')
+          console.log(error)
+        })
+      }).catch(() => {
+      })
     }
   }
 }

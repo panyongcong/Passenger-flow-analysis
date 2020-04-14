@@ -13,7 +13,7 @@
           <div slot="header" class="clearfix">
             <span>店员信息</span>
             <el-button style="float: right; padding: 3px 0;color: red" type="text" @click="del(index)">删除用户</el-button>
-            <el-button style="float: right; padding: 3px 0;margin-right: 15px" type="text" @click="modify(index)">修改密码</el-button>
+            <el-button style="float: right; padding: 3px 0;margin-right: 15px" type="text" @click="modify(index)">重置密码</el-button>
           </div>
           <div style="margin-bottom: 5px">
             用户名：{{item.username}}
@@ -33,34 +33,9 @@
           <div style="margin-bottom: 5px">
             工号：{{item.job_number}}
           </div>
-          <div>
-            账号密码：{{item.password}}
-          </div>
         </el-card>
       </el-row>
     </div>
-    <el-dialog title="修改密码" :visible.sync="dialogFormVisible"
-               :close-on-press-escape="false"
-               :close-on-click-modal="false"
-               width="40%">
-      <el-form :model="ruleForm"
-               :rules="rls"
-               ref="ruleForm">
-        <el-form-item label="旧密码" prop="Oldpass">
-          <el-input type="password" v-model="ruleForm.Oldpass" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="新密码" prop="password">
-          <el-input type="password" v-model="ruleForm.password" autocomplete="off"></el-input>
-        </el-form-item>
-        <el-form-item label="确认新密码" prop="checkPass">
-          <el-input type="password" v-model="ruleForm.checkPass" autocomplete="off"></el-input>
-        </el-form-item>
-      </el-form>
-      <div slot="footer" class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="btnmodify">确 定</el-button>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
@@ -124,6 +99,7 @@ export default {
   },
   methods: {
     init () {
+      this.infdata = []
       let role = localStorage.getItem('userRole')
       if (role === 'admin') {
         this.showback = true
@@ -138,8 +114,6 @@ export default {
         },
         crossDomain: true
       }).then(res => {
-        console.log(res.data.code)
-        console.log(res.data.data)
         if (res.data.code === 200) {
           this.showpage = true
           for (let i = 0; i < res.data.data.length; i++) {
@@ -165,67 +139,58 @@ export default {
     },
     modify (index) {
       this.staffname = this.infdata[index].username
-      this.dialogFormVisible = true
-    },
-    btnmodify () {
-      if (this.ruleForm.Oldpass === '' || this.ruleForm.password === '' || this.ruleForm.checkPass === '') {
-      } else {
-        let mes = '确定修改：' + this.staffname + '的密码吗?'
-        MessageBox.confirm(mes, '提示', {
-          showCancelButton: true,
-          confirmButtonText: '确定',
-          cancelButtonClass: '取消',
-          type: 'warning'
-        }).then(() => {
-          let datamodify = {}
-          datamodify.username = this.staffname
-          datamodify.password = this.ruleForm.Oldpass
-          datamodify.newPassword = this.ruleForm.password
-          datamodify = this.$qs.stringify(datamodify)
-          this.$axios({
-            method: 'post',
-            url: 'http://47.112.255.207:8081/updatePassword',
-            data: datamodify,
-            Headers: {
-              'Authorization': ' '
-            },
-            crossDomain: true
-          }).then(res => {
-            if (res.data.code === 200) {
-              this.dialogFormVisible = false
-              this.init()
-            }
-            if (res.data.code === 401) {
-              console.log('操作失败')
-            }
-            if (res.data.code === 402) {
-              console.log('原密码错误')
-            }
-          }).catch(err => {
-            console.log(err)
-          })
-        }).catch(() => {
+      let namedata = {}
+      namedata.username = this.staffname
+      let name = this.$qs.stringify(namedata)
+      let message = '确定重置用户名为：' + this.infdata[index].username + '的账号吗?'
+      MessageBox.confirm(message, '提示', {
+        showCancelButton: true,
+        confirmButtonText: '确定',
+        cancelButtonClass: '取消',
+        type: 'warning'
+      }).then(() => {
+        this.$axios({
+          method: 'post',
+          url: 'http://47.112.255.207:8081/resetPassword',
+          data: name,
+          Headers: {
+            'Authorization': ' '
+          },
+          crossDomain: true
+        }).then(res => {
+          if (res.data.code === 200) {
+            alert('重置成功')
+          }
+          if (res.data.code === 401) {
+            alert('服务器错误')
+          }
+        }).catch(err => {
+          console.log(err)
         })
-      }
+      }).catch()
     },
     btnquery () {
-      this.$axios.get('http://47.112.255.207:8081/searchPersonal_InformationByUsernameOrName', {
-        Headers: {
-          'Authorization': ' '
-        },
-        params: {
-          param: this.flashPromotion_query.staffdata
-        },
-        crossDomain: true
-      }).then(res => {
-        if (res.data.code === 200) {
-          this.infdata = res.data.data
-          this.showinput = false
-          this.flashPromotion_query.staffdata = ''
-        }
-      }).catch(err => {
-        console.log(err)
-      })
+      if (this.flashPromotion_query.staffdata === '') {
+      } else {
+        this.$axios.get('http://47.112.255.207:8081/searchPersonal_InformationByUsernameOrName', {
+          Headers: {
+            'Authorization': ' '
+          },
+          params: {
+            param: this.flashPromotion_query.staffdata,
+            status: this.$store.state.bossname
+          },
+          crossDomain: true
+        }).then(res => {
+          if (res.data.code === 200) {
+            this.infdata = res.data.data
+            this.showinput = false
+            this.flashPromotion_query.staffdata = ''
+          }
+        }).catch(err => {
+          console.log(err)
+        })
+      }
     },
     blurSearchFor () {
       if (this.placeholder === '可以根据姓名,工号,用户名模糊查询') {

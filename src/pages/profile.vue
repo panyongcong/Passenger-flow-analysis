@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-button type="primary" round @click="btn2" style="margin-bottom: 30px;margin-top: 30px;margin-left: 30px">刷新</el-button>
-    <el-button type="primary" round @click="btnquery" style="margin-bottom: 30px;float: right;margin-top: 30px;margin-right: 30px">查询探针</el-button>
+    <el-button type="primary" round @click="btnquery" style="margin-bottom: 30px;float: right;margin-top: 30px;margin-right: 30px">查询用户</el-button>
     <el-input v-model="flashPromotion_query.name" style="width: 250px;float: right;margin-top: 30px;" :placeholder=placeholder @focus="blurSearchFor()" @blur="blurSear" v-if="showinput"></el-input>
     <el-table :data="list"
             v-loading="listLoading" border>
@@ -33,7 +33,7 @@ export default {
       list1: [],
       listLoading: false,
       showinput: true,
-      placeholder: '根据姓名,工号,用户名支持模糊查找',
+      placeholder: '根据姓名,用户名支持模糊查找',
       flashPromotion_query: {
         name: ''
       }
@@ -73,35 +73,39 @@ export default {
       this.$router.push('/device')
     },
     btnquery () {
-      this.$axios.get('http://47.112.255.207:8081/searchPersonal_InformationByUsernameOrNameExcludePassword', {
-        Headers: {
-          'Authorization': ' '
-        },
-        params: {
-          param: this.flashPromotion_query.name
-        },
-        crossDomain: true
-      }).then(res => {
-        this.dialogVisible_query = false
-        if (res.data.code === 200) {
-          this.list = []
-          this.showinput = false
-          this.flashPromotion_query.name = ''
-          for (let i = 0; i < res.data.data.length; i++) {
-            if (res.data.data[i].uid === 3) {
-            } else {
-              this.list[i] = res.data.data[i]
-              this.list[i] = res.data.data[i]
+      if (this.flashPromotion_query.name === '') {
+      } else {
+        this.$axios.get('http://47.112.255.207:8081/searchPersonal_InformationByUsernameOrName', {
+          Headers: {
+            'Authorization': ' '
+          },
+          params: {
+            param: this.flashPromotion_query.name,
+            status: 2
+          },
+          crossDomain: true
+        }).then(res => {
+          this.dialogVisible_query = false
+          if (res.data.code === 200) {
+            this.list = []
+            this.showinput = false
+            this.flashPromotion_query.name = ''
+            for (let i = 0; i < res.data.data.length; i++) {
+              if (res.data.data[i].uid === 3) {
+              } else {
+                this.list[i] = res.data.data[i]
+                this.list[i] = res.data.data[i]
+              }
             }
+            if (this.list.length === 0) {
+              Message.warning('查找失败')
+            }
+            console.log(this.list)
           }
-          if (this.list.length === 0) {
-            Message.warning('查找失败')
-          }
-          console.log(this.list)
-        }
-      }).catch(err => {
-        console.log(err)
-      })
+        }).catch(err => {
+          console.log(err)
+        })
+      }
     },
     blurSearchFor () {
       if (this.placeholder === '根据设备id查询设备,支持模糊查找') {

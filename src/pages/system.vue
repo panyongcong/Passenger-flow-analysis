@@ -201,7 +201,9 @@ export default {
       jmpOut: '',
       dynamicConsumer: '',
       pickerOptions: {disabledDate (time) {
-        return time.getTime() > Date.now()
+        const one = 3 * 30 * 24 * 3600 * 1000
+        const minTime = Date.now() - one
+        return time.getTime() > Date.now() || time.getTime() < minTime
       },
       shortcuts: [{
         text: '今天',
@@ -225,7 +227,9 @@ export default {
       }]},
       pickerOptions1: {
         disabledDate (time) {
-          return time.getTime() > Date.now()
+          const one = 3 * 30 * 24 * 3600 * 1000
+          const minTime = Date.now() - one
+          return time.getTime() > Date.now() || time.getTime() < minTime
         },
         shortcuts: [{
           text: '今天',
@@ -250,7 +254,9 @@ export default {
       },
       pickerOptions2: {
         disabledDate (time) {
-          return time.getTime() > Date.now()
+          const one = 3 * 30 * 24 * 3600 * 1000
+          const minTime = Date.now() - one
+          return time.getTime() > Date.now() || time.getTime() < minTime
         },
         shortcuts: [{
           text: '今天',
@@ -275,11 +281,16 @@ export default {
       username: '',
       addressdata: [],
       addressdatabystaff: [],
+      timer: null,
       flaghaveshop: false // 判断这人有没有店铺
     }
   },
   created () {
     this.judge()
+  },
+
+  beforeDestroy () {
+    this.destroyed()
   },
   methods: {
     judge () {
@@ -320,6 +331,33 @@ export default {
         }
       })
     },
+    Refresh () {
+      this.$axios.get('http://47.112.255.207:8081/findShop', {
+        Headers: {
+          'Authorization': ' '
+        },
+        params: {
+          username: this.$store.state.bossname
+        },
+        crossDomain: true
+      }).then(res => {
+        this.addressdata = []
+        if (res.data.code === 200) {
+          for (let i = 0; i < res.data.data.length; i++) {
+            let add = {}
+            add.value = i
+            add.label = res.data.data[i].address
+            this.addressdata.push(add)
+          }
+        }
+        if (res.data.code === 443) {
+          let add = {}
+          add.value = 0
+          add.label = localStorage.getItem('address')
+          this.addressdata.push(add)
+        }
+      })
+    },
     checkShop () {
       this.$axios.get('http://47.112.255.207:8081/checkShop', {
         Headers: {
@@ -334,6 +372,7 @@ export default {
           this.shopaddress = localStorage.getItem('address')
           this.gettoday()
           this.checkJurisdiction()
+          this.gettime()
         }
         if (res.data.code === 402) {
           this.chooseaddressbystaff()
@@ -413,10 +452,12 @@ export default {
         this.gettoday()
       }
     },
-    timer () {
-      return setInterval(() => {
-        this.gettoday()
-        this.getData()
+    gettime () {
+      this.timer = setInterval( () => {
+        this.getcustomerdata()
+        this.getChartdata()
+        this.getPassengerflow()
+        this.Refresh()
       }, 5000)
     },
     destroyed () {
@@ -436,6 +477,7 @@ export default {
         console.log(res.data.code)
         if (res.data.code === 200) {
           this.checkJurisdiction()
+          this.gettime()
         }
         if (res.data.code === 444) {
           alert('未登录')
@@ -453,11 +495,14 @@ export default {
       localStorage.setItem('address', this.shopaddress)
       this.gettoday()
     },
-    gettoday () {
+    getdata () {
       var aData = new Date()
       this.value = aData.getFullYear() + '-' + (aData.getMonth() + 1) + '-' + aData.getDate()
       this.value2 = aData.getFullYear() + '-' + (aData.getMonth() + 1) + '-' + aData.getDate()
       this.value3 = aData.getFullYear() + '-' + (aData.getMonth() + 1) + '-' + aData.getDate()
+    },
+    gettoday () {
+      this.getdata()
       this.getcustomerdata()
       this.getChartdata()
       this.getPassengerflow()

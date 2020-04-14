@@ -130,6 +130,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormeditboss = false">取 消</el-button>
         <el-button type="primary" @click="editinf">确 定</el-button>
       </div>
     </el-dialog>
@@ -160,6 +161,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormeditstaff = false">取 消</el-button>
         <el-button type="primary" @click="editinf">确 定</el-button>
       </div>
     </el-dialog>
@@ -294,14 +296,14 @@ export default {
         Oldpass: [{ validator: checkOldpass, trigger: 'blur' }]
       },
       rules: {
-        name: [{validator: checkUser, trigger: 'blur'}],
-        phone: [{validator: checkPhone, trigger: 'blur'}]
+        name: [{validator: checkUser, trigger: 'change'}],
+        phone: [{validator: checkPhone, trigger: 'change'}]
       },
       rulesstaff: {
-        name: [{validator: checkUser, trigger: 'blur'}],
-        phone: [{validator: checkPhone, trigger: 'blur'}],
-        job_number: [{validator: checkjob, trigger: 'blur'}],
-        entry_time: [{validator: checktime, trigger: 'blur'}]
+        name: [{validator: checkUser, trigger: 'change'}],
+        phone: [{validator: checkPhone, trigger: 'change'}],
+        job_number: [{validator: checkjob, trigger: 'change'}],
+        entry_time: [{validator: checktime, trigger: 'change'}]
       },
       showres: false,
       ruleregister: {
@@ -440,7 +442,7 @@ export default {
         if (role === 'staff') {
           this.formstaff.phone = this.PhoneNumber
           this.formstaff.name = this.Realname
-          this.formstaff.job_number = this.workdata
+          this.formstaff.job_number = this.worknumber
           this.formstaff.entry_time = this.workdata
           this.dialogFormeditstaff = true
         }

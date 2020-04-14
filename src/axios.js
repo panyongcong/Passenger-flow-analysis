@@ -1,6 +1,7 @@
 import axios from 'axios'
 import store from './store'
 import router from './router'
+import { showLoading, hideLoading } from './loading'
 var instance = axios.create({
   timeout: 5000,
   headers: { 'Content-Type': 'application/json;charset=UTF-8' }
@@ -10,11 +11,13 @@ instance.interceptors.request.use(
     if (store.state.token) {
       config.headers.Authorization = `token ${store.state.token}`
     }
+    showLoading()
     return config
   }
 )
 instance.interceptors.response.use(
   response => {
+    hideLoading()
     return response
   },
   error => {
@@ -27,6 +30,7 @@ instance.interceptors.response.use(
           })
       }
     }
+    hideLoading()
     return Promise.reject(error.response)
   }
 )

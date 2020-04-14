@@ -193,25 +193,29 @@ export default {
       })
     },
     btnquery () {
-      this.$axios.get('http://47.112.255.207:8081/searchMachineByMachineId', {
-        Headers: {
-          'Authorization': ' '
-        },
-        params: {
-          machineId: this.flashPromotion_query.machineId
-        },
-        crossDomain: true
-      }).then(res => {
-        this.dialogVisible_query = false
-        if (res.data.code === 200) {
-          this.showinput = false
-          this.flashPromotion_query.machineId = ''
-          this.list = res.data.data
-          this.list1 = res.data.data
-        }
-      }).catch(err => {
-        console.log(err)
-      })
+      if (this.flashPromotion_query.machineId === '') {
+      } else {
+        this.$axios.get('http://47.112.255.207:8081/searchMachineByMachineId', {
+          Headers: {
+            'Authorization': ' '
+          },
+          params: {
+            machineId: this.flashPromotion_query.machineId,
+            address: localStorage.getItem('address')
+          },
+          crossDomain: true
+        }).then(res => {
+          this.dialogVisible_query = false
+          if (res.data.code === 200) {
+            this.showinput = false
+            this.flashPromotion_query.machineId = ''
+            this.list = res.data.data
+            this.list1 = res.data.data
+          }
+        }).catch(err => {
+          console.log(err)
+        })
+      }
     },
     blurSearchFor () {
       if (this.placeholder === '根据设备id查询设备,支持模糊查找') {

@@ -92,40 +92,46 @@ export default {
       })
     },
     handlecheck (index, rows) {
-      let name = this.list[index].username
-      this.$store.commit('addstaffname', {staffname: name})
+      let staffname = this.list[index].username
+      let name = this.list[index].name
+      this.$store.commit('addstaffname', {staffname: staffname})
+      this.$store.commit('addname', {name: name})
       this.$router.push('/Management')
     },
     btnquery () {
-      this.$axios.get('http://47.112.255.207:8081/searchPersonal_InformationByUsernameOrNameExcludePassword', {
-        Headers: {
-          'Authorization': ' '
-        },
-        params: {
-          param: this.flashPromotion_query.name
-        },
-        crossDomain: true
-      }).then(res => {
-        this.dialogVisible_query = false
-        if (res.data.code === 200) {
-          this.list = []
-          this.showinput = false
-          this.flashPromotion_query.name = ''
-          for (let i = 0; i < res.data.data.length; i++) {
-            if (res.data.data[i].uid === 3) {
-              this.list[i] = res.data.data[i]
-              this.list[i] = res.data.data[i]
-            } else {
+      if (this.flashPromotion_query.name === '') {
+      } else {
+        this.$axios.get('http://47.112.255.207:8081/searchPersonal_InformationByUsernameOrName', {
+          Headers: {
+            'Authorization': ' '
+          },
+          params: {
+            param: this.flashPromotion_query.name,
+            status: this.$store.state.bossname
+          },
+          crossDomain: true
+        }).then(res => {
+          this.dialogVisible_query = false
+          if (res.data.code === 200) {
+            this.list = []
+            this.showinput = false
+            this.flashPromotion_query.name = ''
+            for (let i = 0; i < res.data.data.length; i++) {
+              if (res.data.data[i].uid === 3) {
+                this.list[i] = res.data.data[i]
+                this.list[i] = res.data.data[i]
+              } else {
+              }
             }
+            if (this.list.length === 0) {
+              Message.warning('查找失败')
+            }
+            console.log(this.list)
           }
-          if (this.list.length === 0) {
-            Message.warning('查找失败')
-          }
-          console.log(this.list)
-        }
-      }).catch(err => {
-        console.log(err)
-      })
+        }).catch(err => {
+          console.log(err)
+        })
+      }
     },
     blurSearchFor () {
       if (this.placeholder === '根据设备id查询设备,支持模糊查找') {

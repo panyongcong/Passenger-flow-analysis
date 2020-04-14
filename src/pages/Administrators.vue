@@ -117,7 +117,7 @@ export default {
         let shopadd = '<table>'
         shopadd = shopadd + '<tr><td> 店铺地址：' + address + '</td></tr>'
         shopadd = shopadd + '<tr><td> 店内人数：' + context + '</td></tr>'
-        shopadd = shopadd + '<tr><td> 店主名字：' + name + '</td></tr>'
+        shopadd = shopadd + '<tr><td> 店主用户名：' + name + '</td></tr>'
         shopadd += '</table>'
         let infoWindow = new BMap.InfoWindow(shopadd, opts)
         window.map.openInfoWindow(infoWindow, point)

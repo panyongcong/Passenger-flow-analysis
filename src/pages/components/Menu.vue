@@ -27,17 +27,17 @@
             <i class="el-icon-view"></i>
             <span slot="title">页面管理</span>
           </el-menu-item>
-          <el-submenu index="1">
+          <el-submenu index="1" v-if="okadmin">
             <template slot="title">
               <i class="el-icon-location"></i>
               <span>用户管理</span>
             </template>
             <el-menu-item-group>
-              <el-menu-item index="/informationadmin" v-if="okadmin">
+              <el-menu-item index="/informationadmin">
                 <i class="el-icon-s-custom"></i>
                 <span slot="title">店主管理</span>
               </el-menu-item>
-              <el-menu-item index="/Administratorinf" v-if="okadmin">
+              <el-menu-item index="/Administratorinf">
                 <i class="el-icon-s-custom"></i>
                 <span slot="title">管理员管理</span>
               </el-menu-item>
